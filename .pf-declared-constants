@@ -1,0 +1,58 @@
+# Figures cited in prose that are genuine derivations or externally published reference values
+# rather than leaves of a producing artifact. Read by audit-framework/checks/check-prose.sh (P2).
+#
+# THE RULE THIS FILE IS NOT ALLOWED TO BREAK: nothing goes on this list because it is inconvenient
+# to trace. Every entry below names the code, the test or the published source that produces it,
+# and each was verified against that producer before it was listed. Anything genuinely derived
+# from the capture belongs in outputs/report-figures.json (src/report-figures.ts), not here — that
+# is where the live money path, the insurance sub-ledger, the natural frequency, the live Perfect
+# Pairs return, the exact side-bet edges and the infinite-deck TD comparison now live.
+#
+# EXTERNAL PUBLISHED REFERENCES (Wizard of Odds, captured 2026-08-23 — see evidence.md E11).
+# These are third-party numbers. They are quoted, never derived, and could not be emitted by an
+# artifact of ours without laundering someone else's measurement as our own.
+#
+# 0.11442   the published Wizard of Odds SINGLE-DECK basic-strategy/continuous-shuffler edge for
+#           the confirmed LIQD rule set, quoted in rtp-analysis.md ("Deck-count sensitivity") as
+#           the external leg of the 1-deck comparison. Our own exact 1-deck solve (-0.083726%) IS
+#           emitted, as finite1TD.edgePerInitialBet in outputs/exact-rtp.json. The 0.031 pp gap
+#           between them is Declared Limitation L11 — explicitly NOT computed by this audit.
+#           (Was written L10 through round 3; L10 is the mid-round hidden-state disclosure sweep.
+#           Corrected round 4, QA-11.)
+# 0.602     the same source's own 8-deck -> 1-deck delta at that rule set: the published 0.48768%
+#           minus the published -0.11442%. Arithmetic on two published figures, one of which is
+#           already in outputs/exact-rtp.json (wooAnchor.basicStrategyContinuousShuffler).
+#
+# PURE INLINE ARITHMETIC — the number is shown WITH its derivation in the same sentence, so the
+# sentence is its own producer and an artifact leaf would add nothing a reader cannot check.
+#
+# 3.85      50/13, the per-bin expected count of a 13-rank first-card chi-squared over a 50-round
+#           served window, quoted in AUDIT_CONTEXT.md#seed-selection-and-server-operations to explain why Step 19 pools the
+#           two end bins (expected count below 5). Stated with its fraction beside it.
+#
+# NOT ON THIS LIST, deliberately: 31/415 = 7.47% (the Perfect Pairs pair expectation) and every
+# other figure that USED to need whitelisting. Each entry above was tested by deleting it and
+# re-running check-prose; 7.47 no longer failed, because both sides of that comparison are now
+# emitted as perfectPairsLive.expectedHitRatePct / hitRatePct. A whitelist entry that is not
+# load-bearing is a liability, so it was removed rather than kept "just in case".
+0.11442
+0.602
+3.85
+
+# ROUND-5 DERIVATIONS (client QA, 2026-09-11). Both were introduced by the round-5 fixes and never
+# declared, so check-prose P2 correctly reported them as orphan figures — cited in prose, emitted by
+# no artifact. Each is a derivation shown in full at its point of use, verified against its producer
+# before being listed here.
+#
+# 0.4065864 — the Step-17 acceptance window, per initial bet:
+#     5 x SIM_SD_PER_ROUND / sqrt(SIM_BASE_ROUNDS) x 100
+#   = 5 x 1.15 / sqrt(2_000_000) x 100 = 0.40658644... pp
+#   SIM_SD_PER_ROUND and SIM_BASE_ROUNDS are both exported by src/config.ts. The figure is a WINDOW
+#   WIDTH and a false-failure budget, not detection power — stated that way at every mention (QA-05).
+0.4065864
+#
+# 0.1999995 — the credit value used by declared mutation R34 (tests/mutations.json), an on-grid
+#   underpayment of 50 units at the 1e-8 settlement precision: 0.20 - 50e-8 = 0.1999995. It is legal
+#   on the money grid, which is the point of the counterexample: Step 8 must reject it on the payout
+#   reconstruction rather than on a grid violation.
+0.1999995

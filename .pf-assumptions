@@ -1,0 +1,20 @@
+# Terms this audit treats as ASSUMED, not observed.
+# Read by audit-framework/checks/check-prose.sh (P1): every mention of a term below, in any
+# chapter, must sit within a qualified sentence — the check reads a +/-2 line window, so the
+# qualifier may be on the line itself or on an adjacent wrapped line (ASSUMED / not probed /
+# not observed / unexercised / cannot be / cannot distinguish / cannot resolve / none did …).
+# One anchored phrase per line, extended-regex.
+#
+# The first two entries come from the same fact: the action never appears in the 6,000 captured
+# rounds, and non-occurrence is not non-availability. See game-rules.md, "Rule set: nine
+# observed, two assumed".
+re-?split
+surrender
+# Added 2026-09-09 (round 3). Same shape, different subject: the modulo-bias REJECTION branch of
+# the draw primitive is never taken in the capture. All 2,490,000 draws accepted their first
+# 4-byte chunk (analytic expectation of a multi-chunk draw across the whole capture: 0.0569), so
+# a server doing a plain `% range` with no rejection would have produced byte-identical data
+# with probability 94.47%. Reproducing 6,000 hands card-for-card validates the ACCEPT path only.
+# See rng-algorithm-analysis.md, "The rejection branch is ASSUMED, not witnessed".
+rejection sampling
+modulo.?bias

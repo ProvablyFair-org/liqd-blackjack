@@ -1,0 +1,698 @@
+[
+  {
+    "name": "blackjack payout shifted off 3:2",
+    "file": "src/exact-play.ts",
+    "find": "s17: true, das: true, peek: true, blackjackPays: 1.5,",
+    "replace": "s17: true, das: true, peek: true, blackjackPays: 1.45,",
+    "runner": "mocha",
+    "spec": "tests/blackjack/wooAnchorTests.ts",
+    "expect": "failing",
+    "guard": "wooAnchorTests (published 0.48768%) + exactOracleTests (1e-12) must reject an edge-shifting rule change"
+  },
+  {
+    "name": "artifact hand-edit: non-canonical formatting of simulation-results.json",
+    "file": "outputs/simulation-results.json",
+    "find": "\"cherryPickFlags\": 5,",
+    "replace": "\"cherryPickFlags\": 5.0,",
+    "runner": "mocha",
+    "spec": "tests/blackjack/artifactTests.ts",
+    "expect": "not byte-identical to its canonical re-serialisation",
+    "guard": "artifactTests round-trip — JSON.stringify(JSON.parse(raw),null,2) === raw rejects any reformatted/hand-edited pinned artifact"
+  },
+  {
+    "name": "artifact hand-edit: wrong cardRemovalLiftPP in simulation-results.json",
+    "file": "outputs/simulation-results.json",
+    "find": "\"cardRemovalLiftPP\": 0.08271318994897969,",
+    "replace": "\"cardRemovalLiftPP\": 0.09271318994897969,",
+    "runner": "mocha",
+    "spec": "tests/blackjack/artifactTests.ts",
+    "expect": "simulation-results.json hash ≠ the pinned SIMULATION_SHA256",
+    "guard": "OUTER: the SIMULATION_SHA256 pin — asserted in artifactTests and enforced again in verify.ts, which aborts before Steps 17-20 rather than scoring a substituted artifact. INNER (re-pinned, i.e. what a forger would do next): Step 17 recomputes (exact finite-8 TD RTP) - (infinite-deck optimal RTP) in-step and hard-FAILs on a >1e-9 mismatch, so a hand-pasted lift cannot survive a re-pin either.",
+    "repin": true,
+    "innerRunner": "verify",
+    "innerExpect": "[FAIL] Step 17"
+  },
+  {
+    "name": "twin-artifact drift: edit the convergence chart html without the json",
+    "file": "outputs/rtp-convergence.html",
+    "find": "99.5123%",
+    "replace": "99.5199%",
+    "runner": "mocha",
+    "spec": "tests/blackjack/artifactTests.ts",
+    "expect": "rtp-convergence.html hash ≠ the pinned SIMULATION_HTML_SHA256",
+    "guard": "SIMULATION_HTML_SHA256 pin — the chart and json are one run and are pinned together, so a stale/edited chart cannot ship beside a fresh json. No inner layer: nothing SCORES the chart, the pin is the whole guard, and that is stated rather than implied.",
+    "note": "Round-2: this pin used to be enforced only inside verify.ts, which aborts before printing anything a reviewer could name. artifactTests now asserts it too, so the guard is visible at mocha level."
+  },
+  {
+    "name": "R1 — exact-rtp.json rtpPerTotalWagered -> 0.99 (README headline 0.432435% per total wagered)",
+    "file": "outputs/exact-rtp.json",
+    "find": "\"rtpPerTotalWagered\": 0.9956756493458622,",
+    "replace": "\"rtpPerTotalWagered\": 0.99,",
+    "runner": "mocha",
+    "spec": "tests/blackjack/exactSolverTests.ts",
+    "expect": "differs from a fresh buildExactArtifact()",
+    "guard": "exactSolverTests 'EVERY field of the committed outputs/exact-rtp.json is re-derived by buildExactArtifact()' — deepStrictEqual against a live solve, then byte identity",
+    "note": "Round-2 QA item 1. Before the fix this mutation passed 45/45 + 31/31 + exit 0: the gate compared only finite8TD.rtpPerInitialBet / edgePerInitialBet / evPerInitialBet."
+  },
+  {
+    "name": "R2 — exact-rtp.json wooAnchor.basicStrategyContinuousShuffler -> 0.005",
+    "file": "outputs/exact-rtp.json",
+    "find": "\"basicStrategyContinuousShuffler\": 0.0048768,",
+    "replace": "\"basicStrategyContinuousShuffler\": 0.005,",
+    "runner": "mocha",
+    "spec": "tests/blackjack/exactSolverTests.ts",
+    "expect": "differs from a fresh buildExactArtifact()",
+    "guard": "same deep-compare — the whole wooAnchor block (source, settings, published constants, sixDeckExact, deltaVsFinite8TD) is re-derived, not just finite8TD",
+    "note": "Round-2 QA item 1, the reviewers' second probe. Previously unguarded."
+  },
+  {
+    "name": "R3 — exact-rtp.json finite8TD.rtpPerInitialBet -> 0.99 (round-1 regression, keep)",
+    "file": "outputs/exact-rtp.json",
+    "find": "\"rtpPerInitialBet\": 0.9951232517767528,",
+    "replace": "\"rtpPerInitialBet\": 0.99,",
+    "runner": "mocha",
+    "spec": "tests/blackjack/exactSolverTests.ts",
+    "expect": "differs from a fresh buildExactArtifact()",
+    "guard": "same deep-compare. Was caught by the round-1 three-field gate; kept so the round-1 fix cannot silently regress when the gate was rewritten."
+  },
+  {
+    "name": "R4 — a scored step reads the capture-side `verified` flag by bracket access (round-1 regression, keep)",
+    "file": "tests/steps/parity.ts",
+    "find": "    checked++;\n    if (!ok) { bad++;",
+    "replace": "    ok = Boolean((b as any)['verified']);\n    checked++;\n    if (!ok) { bad++;",
+    "runner": "mocha",
+    "spec": "tests/blackjack/antiCircularityTests.ts",
+    "expect": "capture-side field `verified` read by",
+    "guard": "antiCircularityTests lint sweep — the round-1 fix added literal-bracket and destructuring patterns to a guard that previously matched dotted access only. Kept because that hole shipped once.",
+    "note": "The lint layer is what this mutation exercises. The STRUCTURAL layer added in round 2 (loader.ts deletes the four fields) means the mutated read now also yields undefined and fails Step 6 — a computed key would evade the lint but not the strip."
+  },
+  {
+    "name": "R5 — dataset: swap the epoch labels of two bets, then re-pin",
+    "file": "data/blackjack-6000hands.json",
+    "find": "      \"epoch\": 0,\n      \"phase\": \"A\",\n      \"id\": \"6hBu_VAq-lMp3UKjYMS1a\",",
+    "replace": "      \"epoch\": 1,\n      \"phase\": \"A\",\n      \"id\": \"6hBu_VAq-lMp3UKjYMS1a\",",
+    "edits": [
+      {
+        "file": "data/blackjack-6000hands.json",
+        "find": "      \"epoch\": 0,\n      \"phase\": \"A\",\n      \"id\": \"6hBu_VAq-lMp3UKjYMS1a\",",
+        "replace": "      \"epoch\": 1,\n      \"phase\": \"A\",\n      \"id\": \"6hBu_VAq-lMp3UKjYMS1a\","
+      },
+      {
+        "file": "data/blackjack-6000hands.json",
+        "find": "      \"epoch\": 1,\n      \"phase\": \"A\",\n      \"id\": \"q2klY0umDnHBUntdOmkBe\",",
+        "replace": "      \"epoch\": 0,\n      \"phase\": \"A\",\n      \"id\": \"q2klY0umDnHBUntdOmkBe\","
+      }
+    ],
+    "runner": "mocha",
+    "spec": "tests/blackjack/artifactTests.ts",
+    "expect": "blackjack-6000hands.json hash ≠ the pinned DATASET_SHA256",
+    "guard": "OUTER: the DATASET_SHA256 pin (asserted in artifactTests, enforced again by src/loader.ts, which aborts before any step runs). INNER, after re-pinning: Step 3 — Within-Epoch Hash Consistency groups by the numeric epoch label and requires every bet in a group to carry seeds[epoch]'s commitment, so a swapped label breaks the map.",
+    "repin": true,
+    "innerRunner": "verify",
+    "innerExpect": "[FAIL] Step 3"
+  },
+  {
+    "name": "R6 — dataset: e0/n0 actions [\"hit\"] -> [\"stand\"], then re-pin",
+    "file": "data/blackjack-6000hands.json",
+    "find": "\"actions\": [\n        \"hit\"\n      ],",
+    "replace": "\"actions\": [\n        \"stand\"\n      ],",
+    "edits": [
+      {
+        "file": "data/blackjack-6000hands.json",
+        "after": "\"id\": \"6hBu_VAq-lMp3UKjYMS1a\",",
+        "find": "\"actions\": [\n        \"hit\"\n      ],",
+        "replace": "\"actions\": [\n        \"stand\"\n      ],"
+      }
+    ],
+    "runner": "mocha",
+    "spec": "tests/blackjack/artifactTests.ts",
+    "expect": "blackjack-6000hands.json hash ≠ the pinned DATASET_SHA256",
+    "guard": "OUTER: DATASET_SHA256 pin. INNER, after re-pinning: Step 6 — the action/card cross-check requires (#hit + #double) to equal the cards drawn beyond two per hand; the hand drew a third card, so relabelling its `hit` to `stand` leaves one card unaccounted for.",
+    "repin": true,
+    "innerRunner": "verify",
+    "innerExpect": "[FAIL] Step 6"
+  },
+  {
+    "name": "R7 — dataset: e0/n0 actions [\"hit\"] -> [\"stand\",\"hit\"], then re-pin (count-preserving)",
+    "file": "data/blackjack-6000hands.json",
+    "find": "\"actions\": [\n        \"hit\"\n      ],",
+    "replace": "\"actions\": [\n        \"stand\",\n        \"hit\"\n      ],",
+    "edits": [
+      {
+        "file": "data/blackjack-6000hands.json",
+        "after": "\"id\": \"6hBu_VAq-lMp3UKjYMS1a\",",
+        "find": "\"actions\": [\n        \"hit\"\n      ],",
+        "replace": "\"actions\": [\n        \"stand\",\n        \"hit\"\n      ],"
+      }
+    ],
+    "runner": "mocha",
+    "spec": "tests/blackjack/artifactTests.ts",
+    "expect": "blackjack-6000hands.json hash ≠ the pinned DATASET_SHA256",
+    "guard": "OUTER: DATASET_SHA256 pin. INNER, after re-pinning: Step 6 — action GRAMMAR. This is the reviewers' round-2 counterexample: #hit + #double is still 1, so the count-only cross-check is blind to it. The grammar rejects a token that follows the round's last terminal.",
+    "repin": true,
+    "innerRunner": "verify",
+    "innerExpect": "[FAIL] Step 6",
+    "note": "Round-2 QA item 21. Before the grammar check this mutation survived: 45/45 + 31/31 + exit 0."
+  },
+  {
+    "name": "R8 — src/config.ts Perfect Pairs COLORED_PAIR 13 -> 12",
+    "file": "src/config.ts",
+    "find": "COLORED_PAIR: 13,",
+    "replace": "COLORED_PAIR: 12,",
+    "runner": "verify",
+    "expect": "[FAIL] Step 15",
+    "guard": "Step 15 — Perfect Pairs Side Bet recomputes every colored-pair settlement in the capture from this paytable, so a wrong multiplier is contradicted by the live wins."
+  },
+  {
+    "name": "R9 — dataset: flip the last nibble of the epoch-0 server seed, then re-pin",
+    "file": "data/blackjack-6000hands.json",
+    "find": "\"serverSeed\": \"6dca5e36b6b9dc56730e282ab3c2bae6\",",
+    "replace": "\"serverSeed\": \"6dca5e36b6b9dc56730e282ab3c2bae7\",",
+    "runner": "mocha",
+    "spec": "tests/blackjack/artifactTests.ts",
+    "expect": "blackjack-6000hands.json hash ≠ the pinned DATASET_SHA256",
+    "guard": "OUTER: DATASET_SHA256 pin. INNER, after re-pinning: Step 1 — Commitment Reveal, because SHA-256 of the altered seed no longer equals the recorded hashedServerSeed. Step 6 fails with it: the shoe rebuilt from the altered seed deals different cards.",
+    "repin": true,
+    "innerRunner": "verify",
+    "innerExpect": "[FAIL] Step 1"
+  },
+  {
+    "name": "R10 — dataset: e0/n12 natural pays 0.25 -> 0.2 (3:2 downgraded to 1:1 — even money), then re-pin",
+    "file": "data/blackjack-6000hands.json",
+    "find": "\"winningAmount\": 0.25,",
+    "replace": "\"winningAmount\": 0.2,",
+    "edits": [
+      {
+        "file": "data/blackjack-6000hands.json",
+        "after": "\"id\": \"mpWMQllDG1ErqaG6SQR8T\",",
+        "find": "\"winningAmount\": 0.25,",
+        "replace": "\"winningAmount\": 0.2,"
+      }
+    ],
+    "runner": "mocha",
+    "spec": "tests/blackjack/artifactTests.ts",
+    "expect": "blackjack-6000hands.json hash ≠ the pinned DATASET_SHA256",
+    "guard": "OUTER: DATASET_SHA256 pin. INNER, after re-pinning: Step 8 — Per-Hand Payout reconstructs every credit from the dealt cards, so a natural credited 0.2 on a 0.10 stake contradicts the reconstruction. Step 9 (Blackjack Pays 3:2) fails with it. LABEL, corrected round 4 (QA-09): on a 0.10 stake a total return of 0.20 is 2x, i.e. EVEN MONEY (1:1) — not 6:5, which would return 0.22. The entry was mislabelled 6:5 in rounds 1-3; the mutation always detected a real payout error, but not the one it named. R36 carries the correctly labelled 6:5 case.",
+    "repin": true,
+    "innerRunner": "verify",
+    "innerExpect": "[FAIL] Step 8"
+  },
+  {
+    "name": "R11 — off-grid money: e0/n12 credit +1e-9 (below the 1e-6 reconciliation tolerance), then re-pin",
+    "file": "data/blackjack-6000hands.json",
+    "find": "\"winningAmount\": 0.25,",
+    "replace": "\"winningAmount\": 0.250000001,",
+    "edits": [
+      {
+        "file": "data/blackjack-6000hands.json",
+        "after": "\"id\": \"mpWMQllDG1ErqaG6SQR8T\",",
+        "find": "\"winningAmount\": 0.25,",
+        "replace": "\"winningAmount\": 0.250000001,"
+      }
+    ],
+    "runner": "mocha",
+    "spec": "tests/blackjack/artifactTests.ts",
+    "expect": "blackjack-6000hands.json hash ≠ the pinned DATASET_SHA256",
+    "guard": "OUTER: DATASET_SHA256 pin. INNER, after re-pinning: Step 8 — the money-GRID assertion. Every recorded amount must be an exact multiple of 1e-8 (capture accounting precision); a +1e-9 perturbation is off-grid. The grid check rejects this off-grid amount before exact integer payout reconciliation.",
+    "repin": true,
+    "innerRunner": "verify",
+    "innerExpect": "[FAIL] Step 8",
+    "note": "Counterexample adopted from our own forged-artifact battery (audit-framework/checks/gate-forgery.sh, F8 'off-grid money'), which reported it SURVIVED — 31/31 Full Pass — before the grid assertion existed."
+  },
+  {
+    "name": "R12 — forged exact-rtp.json: self-consistent nonsense (rtp/edge fields all 0.5)",
+    "file": "outputs/exact-rtp.json",
+    "find": "\"rtpPerInitialBet\": 0.9951232517767528,",
+    "replace": "\"rtpPerInitialBet\": 0.5,",
+    "runner": "mocha",
+    "expect": "exact-rtp.json hash ≠ the pinned EXACT_RTP_SHA256",
+    "guard": "THREE layers, all executed. OUTER: the EXACT_RTP_SHA256 pin asserted in artifactTests. ALSO: the same pin enforced in tests/verify.ts, which refuses to score — this is the layer the forged-artifact battery was missing, and no scored step prints because the pin is fail-fast, which is the guard working rather than a guard absent. INNER, after re-pinning the forged file (what a forger does next): exactSolverTests re-derives every field from buildExactArtifact() and the deep-compare rejects it — a hash says the bytes did not move, the re-derivation says the numbers are the real solve.",
+    "repin": true,
+    "innerRunner": "mocha",
+    "innerSpec": "tests/blackjack/exactSolverTests.ts",
+    "innerExpect": "differs from a fresh buildExactArtifact()",
+    "note": "Counterexample adopted from gate-forgery.sh F4 ('self-consistent nonsense'), which reported it SURVIVED — 31/31 Full Pass — because nothing on the SCORED path read outputs/exact-rtp.json at all; the field-by-field re-derivation lived in mocha only.",
+    "spec": "tests/blackjack/artifactTests.ts",
+    "alsoRunner": "verify",
+    "alsoExpect": "Exact-RTP artifact hash mismatch"
+  },
+  {
+    "name": "R13 — dataset header restated to a shrunken plan: meta.plannedTotal 6000 -> 5950, then re-pin",
+    "file": "data/blackjack-6000hands.json",
+    "find": "\"plannedTotal\": 6000,",
+    "replace": "\"plannedTotal\": 5950,",
+    "runner": "mocha",
+    "spec": "tests/blackjack/artifactTests.ts",
+    "expect": "blackjack-6000hands.json hash ≠ the pinned DATASET_SHA256",
+    "guard": "OUTER: DATASET_SHA256 pin. INNER, after re-pinning: Step 5 — the dataset's own header fields (meta.epochSize, meta.plannedTotal, meta.progress.bets, meta.progress.seeds) are scored AGAINST src/config.ts's EXPECTED_* constants. Before round 3 no step read plannedTotal at all, so a forger could restate the plan for free to match a shrunken capture.",
+    "repin": true,
+    "innerRunner": "verify",
+    "innerExpect": "[FAIL] Step 5",
+    "note": "Round-3 B1. Both Stage-8 reviewers, independently, deleted one epoch (50 rounds + its seeds[] record) and decremented meta.phases.F.hands by 50: 56 passing (the suite's size on that 2026-09-09 run — a historical record of it, not the current test count), 31/31, PROVABLY FAIR — Full Pass, exit 0, with Step 1 printing '119/119 epochs' and Step 6 '5950/5950 hands'. This entry is the header half of that attack, which is what mutations.json can express as a find/replace; the whole-epoch deletion is executed by audit-framework/checks/gate-population.sh."
+  },
+  {
+    "name": "R14 — phase table restated to a shrunken plan: meta.phases.F.hands 500 -> 450, then re-pin",
+    "file": "data/blackjack-6000hands.json",
+    "find": "\"F\": {\n        \"hands\": 500,",
+    "replace": "\"F\": {\n        \"hands\": 450,",
+    "runner": "mocha",
+    "spec": "tests/blackjack/artifactTests.ts",
+    "expect": "blackjack-6000hands.json hash ≠ the pinned DATASET_SHA256",
+    "guard": "OUTER: DATASET_SHA256 pin. INNER, after re-pinning: Step 24 — the declared phase table must SUM to EXPECTED_HANDS from src/config.ts, not merely agree row-by-row with the rows it is compared to. meta.phases lives inside the file being scored, so before round 3 the comparison was self-referential and this edit passed once the matching rounds were removed.",
+    "repin": true,
+    "innerRunner": "verify",
+    "innerExpect": "[FAIL] Step 24",
+    "note": "Round-3 B1, the second half of the reviewers' epoch-deletion counterexample."
+  },
+  {
+    "name": "R15 — truncate an epoch's declared nonce window: seeds[0].nonceEnd 49 -> 48, then re-pin",
+    "file": "data/blackjack-6000hands.json",
+    "find": "\"nonceEnd\": 49,",
+    "replace": "\"nonceEnd\": 48,",
+    "runner": "mocha",
+    "spec": "tests/blackjack/artifactTests.ts",
+    "expect": "blackjack-6000hands.json hash ≠ the pinned DATASET_SHA256",
+    "guard": "OUTER: DATASET_SHA256 pin. INNER, after re-pinning: Step 4 — nonce-window closure. Each seed record's nonceEnd must equal nonceStart + EXPECTED_EPOCH_SIZE - 1 AND a round must be present AT nonceEnd. seeds[].nonceEnd was a DEAD FIELD before round 3 (grep matched src/types.ts and nothing else), which is why a trailing-round deletion could only reach [FLAG] Step 5 -> Conditional Pass, exit 2.",
+    "repin": true,
+    "innerRunner": "verify",
+    "innerExpect": "[FAIL] Step 4",
+    "note": "Round-3 B1. The seed record is written by the capture rig at rotation time and is independent of the bet rows, so it is exactly the witness a truncation has to survive."
+  },
+  {
+    "name": "R16 — meta.progress.seeds 120 -> 119, then re-pin",
+    "file": "data/blackjack-6000hands.json",
+    "find": "\"seeds\": 120,",
+    "replace": "\"seeds\": 119,",
+    "runner": "mocha",
+    "spec": "tests/blackjack/artifactTests.ts",
+    "expect": "blackjack-6000hands.json hash ≠ the pinned DATASET_SHA256",
+    "guard": "OUTER: DATASET_SHA256 pin. INNER, after re-pinning: Step 5 — meta.progress.seeds is scored against EXPECTED_SEEDS. Another field that no step read before round 3.",
+    "repin": true,
+    "innerRunner": "verify",
+    "innerExpect": "[FAIL] Step 5",
+    "note": "Round-3 B1."
+  },
+  {
+    "name": "R17 — simulation claims 1,000,000 rounds instead of 30,000,000 (a 5.5x wider gate), then re-pin",
+    "file": "outputs/simulation-results.json",
+    "find": "\"rounds\": 30000000,",
+    "replace": "\"rounds\": 1000000,",
+    "runner": "mocha",
+    "spec": "tests/blackjack/artifactTests.ts",
+    "expect": "simulation-results.json hash ≠ the pinned SIMULATION_SHA256",
+    "guard": "OUTER: SIMULATION_SHA256 pin. INNER, after re-pinning: Step 17 — sigma is computed from the PINNED SIM_BASE_ROUNDS in src/config.ts and the artifact's own baseGame.rounds must equal that pin. The tolerance used to be se = 1.15/sqrt(rounds) with rounds read out of the file being gated, in BOTH scored Step 17 and the mocha 3-sigma anchor.",
+    "repin": true,
+    "innerRunner": "verify",
+    "innerExpect": "[FAIL] Step 17",
+    "note": "Round-3 B2. The reviewer's executed version paired this with rtpInitial 0.9920 and got [PASS] 17 ... 2.72 sigma, limit 3 — 31/31 Full Pass, missing the true edge by 0.31 pp. The round count alone is enough to reject now, so the forged RTP is not needed to demonstrate the guard."
+  },
+  {
+    "name": "R18 — chi-squared df supplied by the artifact: firstCardDf 12 -> 100000, then re-pin",
+    "file": "outputs/simulation-results.json",
+    "find": "\"firstCardDf\": 12,",
+    "replace": "\"firstCardDf\": 100000,",
+    "runner": "mocha",
+    "spec": "tests/blackjack/artifactTests.ts",
+    "expect": "simulation-results.json hash ≠ the pinned SIMULATION_SHA256",
+    "guard": "OUTER: SIMULATION_SHA256 pin. INNER, after re-pinning: Step 18 — df is PINNED as RANKS-1 in src/config.ts and the artifact's firstCardDf must agree with it; a contradiction is a hard FAIL, not a flag. The step said 'RECOMPUTED from chi2/df' while taking df from the artifact, so chi2=9999 at df=100000 really does give p=1 and it PASSed.",
+    "repin": true,
+    "innerRunner": "verify",
+    "innerExpect": "[FAIL] Step 18",
+    "note": "Round-3 B3. The reviewer's executed version set firstCardChi2=9999, firstCardDf=100000, firstCardPValue=1 together. Either half is now rejected."
+  },
+  {
+    "name": "R19 — every epoch flagged, hidden by a forged null: cherryPickFlags 5 -> 120, then re-pin",
+    "file": "outputs/simulation-results.json",
+    "find": "\"cherryPickFlags\": 5,",
+    "replace": "\"cherryPickFlags\": 120,",
+    "edits": [
+      {
+        "file": "outputs/simulation-results.json",
+        "find": "\"cherryPickFlags\": 5,",
+        "replace": "\"cherryPickFlags\": 120,"
+      },
+      {
+        "file": "outputs/simulation-results.json",
+        "find": "\"expectedFlagsByChance\": 5.699999999999999,",
+        "replace": "\"expectedFlagsByChance\": 120,"
+      },
+      {
+        "file": "outputs/simulation-results.json",
+        "find": "\"cherryPickSurvivalP\": 0.6788813797720822,",
+        "replace": "\"cherryPickSurvivalP\": 1,"
+      }
+    ],
+    "runner": "mocha",
+    "spec": "tests/blackjack/artifactTests.ts",
+    "expect": "simulation-results.json hash ≠ the pinned SIMULATION_SHA256",
+    "guard": "OUTER: SIMULATION_SHA256 pin. INNER, after re-pinning: Step 19 — p0 is PASS2_P0 = alpha(1-alpha) from src/config.ts, never expectedFlagsByChance/seeds_tested, and cherryPickFlags is RECOMPUTED from the rows' own predicate rather than read. The old step derived p0 from two artifact fields, so setting both to 120 made p0 = 1, survival = 1, and a dataset in which EVERY epoch had flagged scored PASS.",
+    "repin": true,
+    "innerRunner": "verify",
+    "innerExpect": "[FAIL] Step 19",
+    "note": "Round-3 B3. Executed by a reviewer; 31/31 Full Pass before the fix. No mocha test read pass2_casino_seeds at all."
+  },
+  {
+    "name": "R20 — forge a per-seed Pass-2 statistic: results[0].earlyChi2 6.03 -> 60.3, then re-pin",
+    "file": "outputs/simulation-results.json",
+    "find": "\"earlyChi2\": 6.03,",
+    "replace": "\"earlyChi2\": 60.3,",
+    "runner": "mocha",
+    "spec": "tests/blackjack/artifactTests.ts",
+    "expect": "simulation-results.json hash ≠ the pinned SIMULATION_SHA256",
+    "guard": "OUTER: SIMULATION_SHA256 pin. INNER, after re-pinning: Step 19 re-derives earlyChi2 for EVERY seed from the revealed serverSeed + clientSeed over the served nonces 0..49 and requires exact agreement (1e-9). Nothing read these rows before round 3 — the step consumed only the three summary scalars above them.",
+    "repin": true,
+    "innerRunner": "verify",
+    "innerExpect": "[FAIL] Step 19",
+    "note": "Round-3 B3. A reviewer reproduced epochs 0/1/2 (6.03 / 5.90 / 13.83, late 8.934737) from the dataset seeds, which is what makes this recomputable rather than merely assertable."
+  },
+  {
+    "name": "R21 — DELETE outputs/exact-rtp.json (a pinned artifact simply absent)",
+    "file": "outputs/exact-rtp.json",
+    "find": "",
+    "replace": "",
+    "edits": [
+      {
+        "file": "outputs/exact-rtp.json",
+        "delete": true
+      }
+    ],
+    "runner": "verify",
+    "expect": "[FAIL] Step 25",
+    "guard": "Step 25 — Artifact Hash Integrity asserts PRESENCE as well as hash for all six pinned artifacts. Every pin used to sit inside `if (fs.existsSync(...))` in tests/verify.ts, so deleting the file skipped the guard entirely: 31/31 · PROVABLY FAIR — Full Pass · exit 0.",
+    "note": "Round-3 B4, executed by a reviewer against exact-rtp.json AND rtp-convergence.html. This is a cross-repo CLASS — the same 'guard inside existsSync' shape was found in mines and plinko in the same round. Deleting a pinned artifact is not a find/replace, which is why tests/mutate.ts grew a `delete` edit: a registry that cannot express the attack that was run is a registry of the attacks that are easy to type. TOOLING NOTE: audit-framework/checks/check-mutations.sh reads only the TOP-LEVEL find/replace of an entry — it has no concept of `edits`, `delete` or `replaceAll` — so it reports this entry as 'find == replace, nothing mutated (NOT RUN)'. That is a limitation of that script, not a dead guard, and it is deliberately NOT papered over with a decoy top-level find/replace: a check that goes green on a mutation it did not run is the exact failure mode this round exists to remove. The deletion IS executed, and caught, by three independent runs: `npm run mutate` (this repo's own runner, which understands `edits`) -> [FAIL] Step 25; audit-framework/checks/gate-forgery.sh F11 'absent artifact of record' -> rejected for all pinned artifacts; and a manual deletion of both exact-rtp.json and rtp-convergence.html together -> [FAIL] Step 25, 30/31, NOT PROVABLY FAIR, exit 1."
+  },
+  {
+    "name": "R22 — DELETE outputs/rtp-convergence.html (the twin pinned artifact)",
+    "file": "outputs/rtp-convergence.html",
+    "find": "",
+    "replace": "",
+    "edits": [
+      {
+        "file": "outputs/rtp-convergence.html",
+        "delete": true
+      }
+    ],
+    "runner": "verify",
+    "expect": "[FAIL] Step 25",
+    "guard": "Step 25 — same presence assertion. Kept as a separate entry from R21 because the two artifacts were guarded by two separate `existsSync` blocks and fixing one would not have fixed the other; that is exactly how this class survived (simulation-results.json had already been hardened for the missing case and its two siblings had not).",
+    "note": "Round-3 B4. TOOLING NOTE: audit-framework/checks/check-mutations.sh reads only the TOP-LEVEL find/replace of an entry — it has no concept of `edits`, `delete` or `replaceAll` — so it reports this entry as 'find == replace, nothing mutated (NOT RUN)'. That is a limitation of that script, not a dead guard, and it is deliberately NOT papered over with a decoy top-level find/replace: a check that goes green on a mutation it did not run is the exact failure mode this round exists to remove. The deletion IS executed, and caught, by three independent runs: `npm run mutate` (this repo's own runner, which understands `edits`) -> [FAIL] Step 25; audit-framework/checks/gate-forgery.sh F11 'absent artifact of record' -> rejected for all pinned artifacts; and a manual deletion of both exact-rtp.json and rtp-convergence.html together -> [FAIL] Step 25, 30/31, NOT PROVABLY FAIR, exit 1."
+  },
+  {
+    "name": "R23 — strip exchangeRate from ALL 12,046 side-bet records, then re-pin",
+    "file": "data/blackjack-6000hands.json",
+    "find": "\"exchangeRate\": \"1.00000000\",",
+    "replace": "",
+    "edits": [
+      {
+        "file": "data/blackjack-6000hands.json",
+        "find": "\"exchangeRate\": \"1.00000000\",\n          ",
+        "replace": "",
+        "replaceAll": true
+      }
+    ],
+    "runner": "mocha",
+    "spec": "tests/blackjack/artifactTests.ts",
+    "expect": "blackjack-6000hands.json hash ≠ the pinned DATASET_SHA256",
+    "guard": "OUTER: DATASET_SHA256 pin. INNER, after re-pinning: Step 21 — `fxRecords > 0`. This was the only scored step in the suite with no coverage assertion: both of its conditions are 'expected 0', which an empty set satisfies for free, so deleting the field entirely printed '[PASS] 21 ... over 0 side-bet records: ; 0 main-game hands carry it (expected 0); 0 nonzero fiat amounts (expected 0). No haircut is observable...' and 31/31 Full Pass.",
+    "repin": true,
+    "innerRunner": "verify",
+    "innerExpect": "[FLAG] Step 21",
+    "note": "Round-3 B5, executed by a reviewer. A single-record edit does NOT demonstrate this — the set has to be emptied — which is why tests/mutate.ts grew `replaceAll`."
+  },
+  {
+    "name": "R24 — a lost doubled round relabelled [\"double\"] -> [\"hit\",\"stand\"], `doubled` left true, then re-pin",
+    "file": "data/blackjack-6000hands.json",
+    "find": "\"actions\": [\n        \"double\"\n      ],",
+    "replace": "\"actions\": [\n        \"hit\",\n        \"stand\"\n      ],",
+    "edits": [
+      {
+        "file": "data/blackjack-6000hands.json",
+        "after": "\"id\": \"lEu_dHka5FS_S4HD7SJIC\"",
+        "find": "\"actions\": [\n        \"double\"\n      ],",
+        "replace": "\"actions\": [\n        \"hit\",\n        \"stand\"\n      ],"
+      }
+    ],
+    "runner": "mocha",
+    "spec": "tests/blackjack/artifactTests.ts",
+    "expect": "blackjack-6000hands.json hash ≠ the pinned DATASET_SHA256",
+    "guard": "OUTER: DATASET_SHA256 pin. INNER, after re-pinning: Step 6 — action grammar G6 binds `bet.doubled` to the token stream ((#double > 0) === bet.doubled). `doubled` is an operator summary boolean that was checked against nothing, and Step 8b's m-factor is unidentifiable on a LOST round (base credit 0, so base x 1 and base x 2 are both 0) — which is why the reviewer chose a lost round.",
+    "repin": true,
+    "innerRunner": "verify",
+    "innerExpect": "[FAIL] Step 6",
+    "note": "Round-3 B6, executed by a reviewer: 31/31 Full Pass before the fix. Target is epoch 0 nonce 28 (id lEu_dHka5FS_S4HD7SJIC), doubled and lost."
+  },
+  {
+    "name": "R25 — a busted round relabelled [\"hit\"] -> [\"double\"], `doubled` left false, then re-pin",
+    "file": "data/blackjack-6000hands.json",
+    "find": "\"actions\": [\n        \"hit\"\n      ],",
+    "replace": "\"actions\": [\n        \"double\"\n      ],",
+    "edits": [
+      {
+        "file": "data/blackjack-6000hands.json",
+        "after": "\"id\": \"1YMJ6NQQDEhAFwrRGCYd1\"",
+        "find": "\"actions\": [\n        \"hit\"\n      ],",
+        "replace": "\"actions\": [\n        \"double\"\n      ],"
+      }
+    ],
+    "runner": "mocha",
+    "spec": "tests/blackjack/artifactTests.ts",
+    "expect": "blackjack-6000hands.json hash ≠ the pinned DATASET_SHA256",
+    "guard": "OUTER: DATASET_SHA256 pin. INNER, after re-pinning: Step 6 — grammar G6, the other direction. Before the fix this passed 31/31 while silently moving the reported total wagered from 4152.60 to 4152.70, because the money-path reconciliation counts one extra stake per `double` token.",
+    "repin": true,
+    "innerRunner": "verify",
+    "innerExpect": "[FAIL] Step 6",
+    "note": "Round-3 B6. Target is epoch 0 nonce 7 (id 1YMJ6NQQDEhAFwrRGCYd1), a bust with a single `hit`."
+  },
+  {
+    "name": "R26 — a `stand` appended to a single hand that auto-ended at 21: [\"hit\"] -> [\"hit\",\"stand\"], then re-pin",
+    "file": "data/blackjack-6000hands.json",
+    "find": "\"actions\": [\n        \"hit\"\n      ],",
+    "replace": "\"actions\": [\n        \"hit\",\n        \"stand\"\n      ],",
+    "edits": [
+      {
+        "file": "data/blackjack-6000hands.json",
+        "after": "\"id\": \"6hBu_VAq-lMp3UKjYMS1a\"",
+        "find": "\"actions\": [\n        \"hit\"\n      ],",
+        "replace": "\"actions\": [\n        \"hit\",\n        \"stand\"\n      ],"
+      }
+    ],
+    "runner": "mocha",
+    "spec": "tests/blackjack/artifactTests.ts",
+    "expect": "blackjack-6000hands.json hash ≠ the pinned DATASET_SHA256",
+    "guard": "OUTER: DATASET_SHA256 pin. INNER, after re-pinning: Step 6 — action grammar G5b. This is the MIRROR of R7: R7 put a token AFTER the terminal (caught by G2), this one puts a legal-looking terminal on a hand that could not have acted. Epoch 0 nonce 0 draws to exactly 21, and a single hand reaching 21 auto-ends and emits no terminal — witnessed on all 5,599 single-hand rounds (467 of them finish at 21 with no terminal; `stand` appears only at totals <= 20). G5b is scoped to single-hand rounds ON PURPOSE: 14 of the 401 split rounds DO carry a `stand` on a hand that finished at 21, so the tidy universal rule is false here and asserting it would manufacture 14 violations against real captured play.",
+    "repin": true,
+    "innerRunner": "verify",
+    "innerExpect": "[FAIL] Step 6",
+    "note": "Round-3 B7, executed by a reviewer: 31/31 Full Pass before the fix. The reviewer also read, but could not demonstrate, that the grammar accepts `stand` on a BUSTED hand; G5a now rejects that too (#stand <= #hands finishing at 21 or under, 0 violations in 6,000/6,000), so the undemonstrated half is closed as well."
+  },
+  {
+    "name": "R27 — drop one side bet's card snapshot: perfectPair.playerHand removed from epoch 0 nonce 0, then re-pin",
+    "file": "data/blackjack-6000hands.json",
+    "find": "\"playerHand\": [\n            \"HEART:7\",\n            \"HEART:9\"\n          ],\n          ",
+    "replace": "",
+    "edits": [
+      {
+        "file": "data/blackjack-6000hands.json",
+        "after": "\"roundId\": \"6hBu_VAq-lMp3UKjYMS1a\"",
+        "find": "\"playerHand\": [\n            \"HEART:7\",\n            \"HEART:9\"\n          ],\n          ",
+        "replace": ""
+      }
+    ],
+    "runner": "mocha",
+    "spec": "tests/blackjack/artifactTests.ts",
+    "expect": "blackjack-6000hands.json hash ≠ the pinned DATASET_SHA256",
+    "guard": "OUTER: DATASET_SHA256 pin. INNER, after re-pinning: Step 29 — the side-bet snapshot count is bound to each round's independent `sideFunded` declaration, so a dropped snapshot fails the coverage assertion rather than shrinking the denominator. This also exercises the Steps 15/16 fallback path, which now uses the split-aware initialTwo() from tests/steps/hands.ts instead of playerHands[0].cards (the wrong pair of cards on 392 of the 401 split rounds).",
+    "repin": true,
+    "innerRunner": "verify",
+    "innerExpect": "[FAIL] Step 29",
+    "note": "Round-3 B8. The fallback is inert on the committed capture — all 11,600 snapshots are present — so this mutation is what makes the binding visible rather than merely asserted."
+  },
+  {
+    "name": "R28 — forged report figure: moneyPath.returnedUsdc 4155.35 -> 4999.99 (the money-path reconciliation the chapters quote)",
+    "file": "outputs/report-figures.json",
+    "find": "\"returnedUsdc\": 4155.35,",
+    "replace": "\"returnedUsdc\": 4999.99,",
+    "runner": "verify",
+    "expect": "[FAIL] Step 25",
+    "guard": "Step 25 — Artifact Hash Integrity re-derives outputs/report-figures.json from the pinned dataset through buildReportFiguresArtifact() and compares it field for field. 4,155.35 returned is the number executive-summary.md and rtp-analysis.md quote for the live money path; before this arm existed it could be edited freely.",
+    "note": "Round-3 gate-forgery, 2026-09-09. outputs/report-figures.json was added to give the report’s prose figures a producing artifact (it took check-prose P2 from 25 orphan figures to 0) and nothing bound it: the framework’s forged-artifact battery emptied its populations (F1), duplicated its rows (F2), shrank them with the header made consistent (F3), set every rtp/edge field to 0.5 (F4) and deleted the file (F11), and each run returned 31/31 · PROVABLY FAIR — Full Pass. Step 25 now re-derives the artifact through the same builder tests/verify.ts writes with (`buildReportFiguresArtifact`) and compares it field for field."
+  },
+  {
+    "name": "R29 — F1 shape: a worked-example population member emptied to {}",
+    "file": "outputs/report-figures.json",
+    "find": "        {\n          \"label\": \"hand 1 (doubled)\",\n          \"amountUsdc\": 0.4\n        },\n",
+    "replace": "        {},\n",
+    "runner": "verify",
+    "expect": "[FAIL] Step 25",
+    "guard": "Step 25 — the field-for-field re-derivation. An emptied population member changes the component list of the split/double worked example that payout-verification.md walks through, and the recomputation from the capture puts it back.",
+    "note": "Round-3 gate-forgery, 2026-09-09. outputs/report-figures.json was added to give the report’s prose figures a producing artifact (it took check-prose P2 from 25 orphan figures to 0) and nothing bound it: the framework’s forged-artifact battery emptied its populations (F1), duplicated its rows (F2), shrank them with the header made consistent (F3), set every rtp/edge field to 0.5 (F4) and deleted the file (F11), and each run returned 31/31 · PROVABLY FAIR — Full Pass. Step 25 now re-derives the artifact through the same builder tests/verify.ts writes with (`buildReportFiguresArtifact`) and compares it field for field. This is the F1 (empty population) shape reduced to a single find/replace so both this repo’s runner and the framework’s check-mutations.sh can execute it; gate-forgery empties EVERY population member of the artifact."
+  },
+  {
+    "name": "R30 — F2 shape: a worked-example population member duplicated, count preserved",
+    "file": "outputs/report-figures.json",
+    "find": "        {\n          \"label\": \"hand 2 (doubled)\",\n          \"amountUsdc\": 0.4\n        },\n",
+    "replace": "        {\n          \"label\": \"hand 1 (doubled)\",\n          \"amountUsdc\": 0.4\n        },\n",
+    "runner": "verify",
+    "expect": "[FAIL] Step 25",
+    "guard": "Step 25 — the field-for-field re-derivation. Count-preserving duplication is invisible to any check that only counts rows; the recomputation reproduces hand 2 from the capture and the label mismatch is reported by path.",
+    "note": "Round-3 gate-forgery, 2026-09-09. outputs/report-figures.json was added to give the report’s prose figures a producing artifact (it took check-prose P2 from 25 orphan figures to 0) and nothing bound it: the framework’s forged-artifact battery emptied its populations (F1), duplicated its rows (F2), shrank them with the header made consistent (F3), set every rtp/edge field to 0.5 (F4) and deleted the file (F11), and each run returned 31/31 · PROVABLY FAIR — Full Pass. Step 25 now re-derives the artifact through the same builder tests/verify.ts writes with (`buildReportFiguresArtifact`) and compares it field for field."
+  },
+  {
+    "name": "R31 — F3 shape: worked example shrunk from four components to three, credited + sum restated to stay self-consistent",
+    "file": "outputs/report-figures.json",
+    "find": "          \"amountUsdc\": 0.7\n        },\n        {\n          \"label\": \"twentyOnePlusThree\",\n          \"amountUsdc\": 3.1\n        }\n",
+    "replace": "          \"amountUsdc\": 0.7\n        }\n",
+    "edits": [
+      {
+        "file": "outputs/report-figures.json",
+        "find": "          \"amountUsdc\": 0.7\n        },\n        {\n          \"label\": \"twentyOnePlusThree\",\n          \"amountUsdc\": 3.1\n        }\n",
+        "replace": "          \"amountUsdc\": 0.7\n        }\n"
+      },
+      {
+        "file": "outputs/report-figures.json",
+        "find": "\"componentsSumUsdc\": 4.6,",
+        "replace": "\"componentsSumUsdc\": 1.5,"
+      },
+      {
+        "file": "outputs/report-figures.json",
+        "find": "\"credited\": 4.6,",
+        "replace": "\"credited\": 1.5,"
+      }
+    ],
+    "runner": "verify",
+    "expect": "[FAIL] Step 25",
+    "guard": "Step 25 — the field-for-field re-derivation. The forgery is internally consistent (0.40 + 0.40 + 0.70 = 1.50 credited, reconciles true), so nothing inside the artifact contradicts it; only a recomputation from the capture does. This is the shape that hides a dropped side-bet leg from the payout chapter.",
+    "note": "Round-3 gate-forgery, 2026-09-09. outputs/report-figures.json was added to give the report’s prose figures a producing artifact (it took check-prose P2 from 25 orphan figures to 0) and nothing bound it: the framework’s forged-artifact battery emptied its populations (F1), duplicated its rows (F2), shrank them with the header made consistent (F3), set every rtp/edge field to 0.5 (F4) and deleted the file (F11), and each run returned 31/31 · PROVABLY FAIR — Full Pass. Step 25 now re-derives the artifact through the same builder tests/verify.ts writes with (`buildReportFiguresArtifact`) and compares it field for field. The three edits together keep the artifact self-consistent, which is the whole point of the F3 class."
+  },
+  {
+    "name": "R32 — F4 shape: rtp/edge fields set to 0.5 (self-consistent nonsense)",
+    "file": "outputs/report-figures.json",
+    "find": "\"realizedRtpInclInsurancePct\": 98.02087633425724,",
+    "replace": "\"realizedRtpInclInsurancePct\": 0.5,",
+    "edits": [
+      {
+        "file": "outputs/report-figures.json",
+        "find": "\"realizedRtpInclInsurancePct\": 98.02087633425724,",
+        "replace": "\"realizedRtpInclInsurancePct\": 0.5,"
+      },
+      {
+        "file": "outputs/report-figures.json",
+        "find": "\"realizedRtpExInsurancePct\": 98.46963348263739",
+        "replace": "\"realizedRtpExInsurancePct\": 0.5"
+      },
+      {
+        "file": "outputs/report-figures.json",
+        "find": "\"perfectPairsEdgePct\": 2.1686746987951806,",
+        "replace": "\"perfectPairsEdgePct\": 0.5,"
+      }
+    ],
+    "runner": "verify",
+    "expect": "[FAIL] Step 25",
+    "guard": "Step 25 — the field-for-field re-derivation. 98.0209% / 98.4696% are the realized-return figures the executive summary and rtp-analysis.md quote, and 2.1687% is the exact Perfect Pairs edge findings.md quotes; all three are recomputed here from the capture and the exact enumeration.",
+    "note": "Round-3 gate-forgery, 2026-09-09. outputs/report-figures.json was added to give the report’s prose figures a producing artifact (it took check-prose P2 from 25 orphan figures to 0) and nothing bound it: the framework’s forged-artifact battery emptied its populations (F1), duplicated its rows (F2), shrank them with the header made consistent (F3), set every rtp/edge field to 0.5 (F4) and deleted the file (F11), and each run returned 31/31 · PROVABLY FAIR — Full Pass. Step 25 now re-derives the artifact through the same builder tests/verify.ts writes with (`buildReportFiguresArtifact`) and compares it field for field."
+  },
+  {
+    "name": "R33 — DELETE outputs/report-figures.json (the artifact of record for the prose figures, simply absent)",
+    "file": "outputs/report-figures.json",
+    "find": "",
+    "replace": "",
+    "edits": [
+      {
+        "file": "outputs/report-figures.json",
+        "delete": true
+      }
+    ],
+    "runner": "verify",
+    "expect": "[FAIL] Step 25",
+    "guard": "Step 25 — absence is a FAIL, not a silent regeneration. tests/verify.ts rewrites this file at the END of a run, so an unguarded run recreates a deleted artifact and reports a clean pass — which is exactly what gate-forgery F11 measured. The file is an artifact of record: .gitignore un-ignores it (`!outputs/report-figures.json`), evidence.md carries it as E21, and MANIFEST.md and reproducibility.md cite it by name as the trace for published figures.",
+    "note": "Round-3 gate-forgery, 2026-09-09. outputs/report-figures.json was added to give the report’s prose figures a producing artifact (it took check-prose P2 from 25 orphan figures to 0) and nothing bound it: the framework’s forged-artifact battery emptied its populations (F1), duplicated its rows (F2), shrank them with the header made consistent (F3), set every rtp/edge field to 0.5 (F4) and deleted the file (F11), and each run returned 31/31 · PROVABLY FAIR — Full Pass. Step 25 now re-derives the artifact through the same builder tests/verify.ts writes with (`buildReportFiguresArtifact`) and compares it field for field. TOOLING NOTE: audit-framework/checks/check-mutations.sh and gate-anchor.sh read only the TOP-LEVEL find/replace of an entry — they have no concept of `edits`, `delete` or `replaceAll` — so this entry reports as ‘find == replace, nothing mutated (NOT RUN)’ there. That is a limitation of those scripts, not a dead guard, and it is deliberately NOT papered over with a decoy top-level find/replace: a check that goes green on a mutation it did not run is the exact failure mode this round exists to remove. The deletion IS executed, and caught, by `npm run mutate` (this repo’s own runner, which understands `edits`) and by audit-framework/checks/gate-forgery.sh F11."
+  },
+  {
+    "name": "R34 — on-grid underpayment: e0/n0 per-hand credit 0.2 -> 0.1999995 (50 settlement units short), then re-pin",
+    "file": "data/blackjack-6000hands.json",
+    "find": "\"winningAmount\": 0.2,",
+    "replace": "\"winningAmount\": 0.1999995,",
+    "edits": [
+      {
+        "file": "data/blackjack-6000hands.json",
+        "after": "\"id\": \"6hBu_VAq-lMp3UKjYMS1a\",",
+        "find": "\"winningAmount\": 0.2,",
+        "replace": "\"winningAmount\": 0.1999995,"
+      }
+    ],
+    "runner": "mocha",
+    "spec": "tests/blackjack/artifactTests.ts",
+    "expect": "blackjack-6000hands.json hash ≠ the pinned DATASET_SHA256",
+    "guard": "OUTER: DATASET_SHA256 pin. INNER, after re-pinning: Step 8 — the per-hand reconstruction and the round-level money path, both now compared as EXACT INTEGER equality in 1e-8 settlement units. 0.1999995 is a perfectly legal grid amount (19,999,950 units) and is 50 units SHORT of the 20,000,000 the cards and rules require, so it is a genuine underpayment that the old 1e-6 float tolerance could not see and the grid assertion alone would not have caught either — the two checks are complementary, not redundant.",
+    "repin": true,
+    "innerRunner": "verify",
+    "innerExpect": "[FAIL] Step 8",
+    "note": "Counterexample executed by the round-4 reviewer, who applied exactly this edit, re-pinned the dataset, and reported the complete suite still passing 65/31 with exit 0 (QA-01). It is adopted here so the closed class cannot reopen."
+  },
+  {
+    "name": "R35 — one-unit money error: e0/n0 per-hand credit 0.2 -> 0.19999999 (1 settlement unit short), then re-pin",
+    "file": "data/blackjack-6000hands.json",
+    "find": "\"winningAmount\": 0.2,",
+    "replace": "\"winningAmount\": 0.19999999,",
+    "edits": [
+      {
+        "file": "data/blackjack-6000hands.json",
+        "after": "\"id\": \"6hBu_VAq-lMp3UKjYMS1a\",",
+        "find": "\"winningAmount\": 0.2,",
+        "replace": "\"winningAmount\": 0.19999999,"
+      }
+    ],
+    "runner": "mocha",
+    "spec": "tests/blackjack/artifactTests.ts",
+    "expect": "blackjack-6000hands.json hash ≠ the pinned DATASET_SHA256",
+    "guard": "OUTER: DATASET_SHA256 pin. INNER, after re-pinning: Step 8. The SMALLEST discrepancy that can exist on the 1e-8 settlement grid — one unit — must still fail. This is the boundary case for the GRID_TOL=1e-3 units constant used when reading a JSON double back onto the grid: it has to absorb the measured 1.2e-7 units of IEEE-754 representation noise while never absorbing a one-unit money error, and this entry executes that separation instead of asserting it.",
+    "repin": true,
+    "innerRunner": "verify",
+    "innerExpect": "[FAIL] Step 8",
+    "note": "Requested by round-4 QA-01's acceptance check ('add one-unit and off-grid negative cases'). The off-grid half of that pair is R11."
+  },
+  {
+    "name": "R36 — dataset: e0/n12 natural pays 0.25 -> 0.22 (3:2 downgraded to 6:5 — the correctly labelled case), then re-pin",
+    "file": "data/blackjack-6000hands.json",
+    "find": "\"winningAmount\": 0.25,",
+    "replace": "\"winningAmount\": 0.22,",
+    "edits": [
+      {
+        "file": "data/blackjack-6000hands.json",
+        "after": "\"id\": \"mpWMQllDG1ErqaG6SQR8T\",",
+        "find": "\"winningAmount\": 0.25,",
+        "replace": "\"winningAmount\": 0.22,"
+      }
+    ],
+    "runner": "mocha",
+    "spec": "tests/blackjack/artifactTests.ts",
+    "expect": "blackjack-6000hands.json hash ≠ the pinned DATASET_SHA256",
+    "guard": "OUTER: DATASET_SHA256 pin. INNER, after re-pinning: Step 8, and Step 9 with it. On a 0.10 stake a 6:5 natural returns 0.22 (stake + 1.2x), against the 0.25 that 3:2 requires — the single most common real-world blackjack downgrade, and the one R10 was mislabelled as covering.",
+    "repin": true,
+    "innerRunner": "verify",
+    "innerExpect": "[FAIL] Step 8",
+    "note": "Added round 4 (QA-09) so the 6:5 arithmetic is actually exercised rather than merely named."
+  },
+  {
+    "name": "R37 — round engine: the natural pays [1, 2.5] -> [1, 2] (3:2 downgraded to even money in the ENGINE, not the dataset)",
+    "file": "src/round-engine.ts",
+    "find": "if (playerBJ) return [1, 2.5];",
+    "replace": "if (playerBJ) return [1, 2];",
+    "runner": "mocha",
+    "spec": "tests/blackjack/roundEngineTests.ts",
+    "expect": "has drifted from the audited strategy",
+    "guard": "tests/blackjack/roundEngineTests.ts — the 5σ binding of src/round-engine.ts to the exact 8-deck TD solve. Downgrading the natural removes ≈0.5 × 4.75% = 2.4 pp per initial bet, which is ~5.9× the 0.4065864 pp acceptance window, so the named assertion fails and prints the drift message.",
+    "note": "Added round 4 (QA-10). The report previously pointed at two MATHEMATICAL SANITY CHECKS — the Wizard-of-Odds anchor and the gate-width inequality — as demonstrations that a payout regression in the live engine would be caught. Neither executes the faulty payout path: the anchor compares solver output to a published constant, and the gate-width test only asserts that the shift WOULD exceed the window. This entry is the missing execution: it mutates the engine's own natural settlement and shows a named assertion going red."
+  },
+  {
+    "name": "R38 — shared shuffler: cap the lazy Fisher-Yates frontier at 24, reinstating the fixed-prefix defect",
+    "file": "src/shuffle.ts",
+    "find": "while (f <= k) {",
+    "replace": "while (f <= k && f < 24) {",
+    "runner": "mocha",
+    "spec": "tests/blackjack/rngTests.ts",
+    "expect": "depth 40: chi2=",
+    "guard": "tests/blackjack/rngTests.ts — 'position 40 is uniform over the 13 ranks'. With the frontier capped, position 40 is never settled by a draw for that round, so the rank landing there is grossly non-uniform and the χ² blows past the 0.1% critical value of 32.91.",
+    "note": "Round-4 QA-02. The reviewer applied exactly this cap to the REAL simulator (src/simulate.ts, `frontier <= k` -> `frontier <= k && frontier < 24`) and all three depth tests stayed GREEN, because those tests carried a private copy of the shuffle loop. The loop now lives once in src/shuffle.ts; src/simulate.ts imports it, rngTests.ts drives it, and rngTests.ts additionally asserts in source that simulate.ts has not re-inlined a copy. This entry executes the reviewer's counterexample against the shared implementation and requires it to be caught."
+  }
+]

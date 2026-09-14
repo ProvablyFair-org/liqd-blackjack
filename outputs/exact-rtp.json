@@ -1,0 +1,94 @@
+{
+  "generatedBy": "npm run rtp (src/exact-play.ts)",
+  "deterministic": true,
+  "finite8TD": {
+    "model": {
+      "kind": "finite",
+      "decks": 8
+    },
+    "strategy": "TD",
+    "rules": {
+      "s17": true,
+      "das": true,
+      "peek": true,
+      "blackjackPays": 1.5,
+      "splitAcesOneCard": true,
+      "doubleAnyTwo": true
+    },
+    "evPerInitialBet": -0.004876748223247249,
+    "rtpPerInitialBet": 0.9951232517767528,
+    "edgePerInitialBet": 0.004876748223247249,
+    "avgWager": 1.1277411600701008,
+    "evPerTotalWagered": -0.0043243506541377884,
+    "rtpPerTotalWagered": 0.9956756493458622,
+    "edgePerTotalWagered": 0.0043243506541377884,
+    "playerBlackjackFreq": 0.04745134383688582,
+    "dealerBlackjackFreq": 0.04745134383688583,
+    "probabilityMass": 1.0000000000000038,
+    "cdPeekIsApproximate": false
+  },
+  "finite1TD": {
+    "model": {
+      "kind": "finite",
+      "decks": 1
+    },
+    "strategy": "TD",
+    "rules": {
+      "s17": true,
+      "das": true,
+      "peek": true,
+      "blackjackPays": 1.5,
+      "splitAcesOneCard": true,
+      "doubleAnyTwo": true
+    },
+    "evPerInitialBet": 0.0008372608547358003,
+    "rtpPerInitialBet": 1.0008372608547358,
+    "edgePerInitialBet": -0.0008372608547358003,
+    "avgWager": 1.1200529442546212,
+    "evPerTotalWagered": 0.0007475189981246691,
+    "rtpPerTotalWagered": 1.0007475189981248,
+    "edgePerTotalWagered": -0.0007475189981246691,
+    "playerBlackjackFreq": 0.048265460030165866,
+    "dealerBlackjackFreq": 0.04826546003016579,
+    "probabilityMass": 1.0000000000000013,
+    "cdPeekIsApproximate": false
+  },
+  "infiniteCD": {
+    "model": {
+      "kind": "infinite"
+    },
+    "strategy": "CD",
+    "rules": {
+      "s17": true,
+      "das": true,
+      "peek": true,
+      "blackjackPays": 1.5,
+      "splitAcesOneCard": true,
+      "doubleAnyTwo": true
+    },
+    "evPerInitialBet": -0.005703880122735879,
+    "rtpPerInitialBet": 0.9942961198772641,
+    "edgePerInitialBet": 0.005703880122735879,
+    "avgWager": 1.1269347927378135,
+    "evPerTotalWagered": -0.005061410970264464,
+    "rtpPerTotalWagered": 0.9949385890297355,
+    "edgePerTotalWagered": 0.005061410970264464,
+    "playerBlackjackFreq": 0.04733727810650856,
+    "dealerBlackjackFreq": 0.047337278106508625,
+    "probabilityMass": 1.0000000000000067,
+    "cdPeekIsApproximate": false
+  },
+  "cardRemovalLiftPP": 0.08271318994886867,
+  "note": "finite8TD is the headline: exact EV of the src/strategy.ts table on a real 416-card shoe, hole-explicit peek branch, anchored to the tiny-shoe exact-rational oracle (anchor/oracle.py, tests/blackjack/exactOracleTests.ts). Finite-shoe CD is a demoted internal diagnostic (cdPeekIsApproximate) and is deliberately absent from this artifact. Base game only — side bets and insurance are excluded.",
+  "wooAnchor": {
+    "source": "https://wizardofodds.com/games/blackjack/calculator/",
+    "capturedAt": "2026-08-23",
+    "settings": "8 decks, S17, DAS, double any two, split to 2 hands, no resplit aces, no hit split aces, OBO peek, no surrender, blackjack 3:2",
+    "basicStrategyContinuousShuffler": 0.0048768,
+    "basicStrategyContinuousShufflerNote": "total-dependent basic strategy, reshuffle every hand — the LIQD regime; published at 5 decimal places of percent (0.48768%)",
+    "deltaVsFinite8TD": -5.1776752750705424e-8,
+    "sixDeckPublished": 0.0045999,
+    "sixDeckExact": 0.004599355936215963,
+    "sixDeckNote": "Same rule set at 6 decks: WoO publishes 0.45999% (sixDeckPublished) while this engine solves to sixDeckExact. The differences are about 0.00005441 pp at six decks and 0.00000518 pp at eight decks. This supports close agreement at the available reference precision; it does not certify every digit of the internal solve."
+  }
+}

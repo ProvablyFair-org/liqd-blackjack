@@ -1,0 +1,225 @@
+{
+  "audit": "LIQD Blackjack",
+  "datasetSha256": "c2a28c5164a546105963ffb4ff8e7c422a68802df47afcdcfa0b4fdbad1fdbf7",
+  "artifactHashes": {
+    "dataset": "c2a28c5164a546105963ffb4ff8e7c422a68802df47afcdcfa0b4fdbad1fdbf7",
+    "simulation": "782c056164982d76879225c2e4059d1d7ee29f176e095ee78105386759574686",
+    "simulationPinned": "782c056164982d76879225c2e4059d1d7ee29f176e095ee78105386759574686",
+    "simulationFreshRun": "false",
+    "simulationHtml": "321d58a6609efb00e52c69c56c5d0ecc245d6da83f3a06f70c07a6c2da827c66",
+    "simulationHtmlPinned": "321d58a6609efb00e52c69c56c5d0ecc245d6da83f3a06f70c07a6c2da827c66",
+    "exactRtp": "db26864d6a7272cbc069e85a961b231b3937332a291822215612dc79060a5fff",
+    "exactRtpPinned": "db26864d6a7272cbc069e85a961b231b3937332a291822215612dc79060a5fff",
+    "cherryPickAttack": "d69da9086664be838677cfc4da146b66e56b69f00f1d755b4a8d38d0ef08d4ad",
+    "cherryPickAttackPinned": "d69da9086664be838677cfc4da146b66e56b69f00f1d755b4a8d38d0ef08d4ad",
+    "rngBranchCoverage": "eb2c74a1ecf84d3dbf3c1cc3a490b9c04ad1a24d201c4f58efc4403bbacb4593",
+    "rngBranchCoveragePinned": "eb2c74a1ecf84d3dbf3c1cc3a490b9c04ad1a24d201c4f58efc4403bbacb4593"
+  },
+  "verdict": "PROVABLY FAIR — Full Pass",
+  "passed": 31,
+  "total": 31,
+  "flags": 0,
+  "failed": 0,
+  "results": [
+    {
+      "step": 1,
+      "name": "Commitment Reveal",
+      "status": "PASS",
+      "detail": "120/120 epochs have a revealed server seed that hashes to its commitment (SHA-256 utf8); 0 mismatches"
+    },
+    {
+      "step": 2,
+      "name": "Pre-Commitment Chain",
+      "status": "PASS",
+      "detail": "119/119 next-seed links verified (expected 119 = EXPECTED_SEEDS−1); 0 broken"
+    },
+    {
+      "step": 3,
+      "name": "Within-Epoch Hash Consistency",
+      "status": "PASS",
+      "detail": "120/120 epochs carry bets; every bet's epoch label maps to the seed record whose commitment it carries; 0 epoch(s) with a mismatch"
+    },
+    {
+      "step": 4,
+      "name": "Nonce Continuity",
+      "status": "PASS",
+      "detail": "contiguous from nonceStart within each epoch; 0 epoch(s) with a gap; nonce window closed against the seed record: 120/120 epochs have nonceEnd == nonceStart+49 and a round present AT nonceEnd (0 wrong window, 0 truncated tail)"
+    },
+    {
+      "step": 5,
+      "name": "Epoch Size",
+      "status": "PASS",
+      "detail": "120/120 epochs; min=50 max=50; 0 not exactly 50; 6000/6000 rounds total. Expected counts come from src/config.ts (EXPECTED_SEEDS/EXPECTED_EPOCH_SIZE/EXPECTED_HANDS), not from the dataset header; the dataset's own header agrees (meta.epochSize, meta.plannedTotal, meta.progress.bets, meta.progress.seeds)"
+    },
+    {
+      "step": 6,
+      "name": "Recomputation Parity",
+      "status": "PASS",
+      "detail": "6000/6000 hands recomputed from revealed seeds in exact draw order (5599 single-hand, 401 split) — 0 mismatches; action/card cross-check: 6000/6000 hands have hit+double tokens matching drawn cards, 0 inconsistent; action grammar (no token after a hand's last terminal, no `double` after a `hit`, `no-ins`/`split` only at the head, a hand ends without standing only on bust/21/split-ace/dealer natural, no `stand` on a busted hand — nor on a single hand that reached 21 — and `bet.doubled` agrees with the `double` tokens): 6000/6000 rounds consistent, 0 inconsistent"
+    },
+    {
+      "step": 7,
+      "name": "Client-Seed Dependence",
+      "status": "PASS",
+      "detail": "974/1000 sampled hands deal a different first card under a wrong client seed (collisions expected ~1/52)"
+    },
+    {
+      "step": 8,
+      "name": "Per-Hand Payout (reconstructed from cards)",
+      "status": "PASS",
+      "detail": "6401/6401 hands: win→2×, push→1×, loss→0 derived from cards+rules (0 mismatches) | money path: 6000/6000 bets reconcile exactly as (Σ hand win)×m + Σ side win | money grid: 42894/42894 recorded amounts are exact multiples of 1e-8 (capture accounting precision), 0 off-grid. Both comparisons above are EXACT INTEGER equality in those 1e-8 units, not a float tolerance: a one-unit discrepancy fails"
+    },
+    {
+      "step": 9,
+      "name": "Blackjack Pays 3:2",
+      "status": "PASS",
+      "detail": "243 winning natural blackjacks, all return exactly 2.5× stake — compared as 2×credit == 5×stake in integer 1e-8 settlement units, no tolerance (0 mismatches)"
+    },
+    {
+      "step": 10,
+      "name": "Insurance Pays 2:1 iff Dealer Blackjack",
+      "status": "PASS",
+      "detail": "446 insurance bets: wins occur on exactly the dealer-blackjack hands and return exactly 3× stake, losses exactly 0 — integer 1e-8 settlement units, no tolerance (0 false wins, 0 missed wins, 0 wrong payouts)"
+    },
+    {
+      "step": 11,
+      "name": "Dealer Stands on Soft 17 (S17)",
+      "status": "PASS",
+      "detail": "6000 dealer hands replayed against S17: 0 over-draws (took a card on 17+), 0 under-draws (stood below 17 with a live player hand); 108 hands finished on soft 17 — the dealer stood, confirming S17 rather than H17; 177 hands exempt (player natural blackjack settles 3:2 before the dealer draws)"
+    },
+    {
+      "step": 12,
+      "name": "Double-After-Split Allowed (DAS)",
+      "status": "PASS",
+      "detail": "165 of 401 split rounds carry both a `split` and a `double` action token ⇒ DAS allowed. Derived from the action stream, not from the operator's `split`/`doubled` summary booleans; those booleans are required to agree and do (165 of 401)"
+    },
+    {
+      "step": 13,
+      "name": "Dealer Peeks for Blackjack",
+      "status": "PASS",
+      "detail": "283 dealer blackjacks, all settled with no player play action (peek on Ace/10) — 283/283"
+    },
+    {
+      "step": 14,
+      "name": "No Surrender Action Observed",
+      "status": "PASS",
+      "detail": "0 surrender actions across 6000 rounds. The action vocabulary is hit, stand, double, no-ins, split. no-ins is not a decline token — 446/446 rounds carrying it also carry a funded, settled insurance record — so this step shows only that surrender was never TAKEN; availability was not probed from this capture."
+    },
+    {
+      "step": 15,
+      "name": "Perfect Pairs Side Bet",
+      "status": "PASS",
+      "detail": "5800/5800 Perfect Pairs bets re-derived from the initial two cards against the 25/13/6 paytable, payouts compared as exact integer 1e-8 settlement units: 0 category, 0 payout mismatch; winning categories MIXED_PAIR:234, COLORED_PAIR:123, PERFECT_PAIR:100"
+    },
+    {
+      "step": 16,
+      "name": "21+3 Side Bet",
+      "status": "PASS",
+      "detail": "5800/5800 21+3 bets re-derived (5/10/30/40/100), payouts compared as exact integer 1e-8 settlement units: 0 category, 0 payout mismatch [FLUSH:345, STRAIGHT:166, THREE_OF_A_KIND:32, STRAIGHT_FLUSH:14, SUITED_THREE_OF_A_KIND:1]"
+    },
+    {
+      "step": 17,
+      "name": "Basic-strategy RTP vs exact 8-deck solver",
+      "status": "PASS",
+      "detail": "exact TD edge 0.487675% per initial bet (0.432435% per total wagered, avg wager 1.127741); simulation 0.4886% over 30,000,000 rounds (±0.0210 pp 1σ, σ computed from the PINNED 30,000,000 rounds in src/config.ts, never from the artifact) → 0.04σ, limit 3σ; per total wagered 0.04σ (±0.0186 pp 1σ). Exact figure recomputed in-step, not read from the artifact. Card-removal lift 0.082713 pp matches the in-step recomputation."
+    },
+    {
+      "step": 18,
+      "name": "Simulation Pass 1 — first-card uniformity + serial independence",
+      "status": "PASS",
+      "detail": "first-card rank χ²=9.51 (df 12 PINNED as RANKS−1 in src/config.ts, p=0.6585 RECOMPUTED from χ² at that df, threshold ≥0.01); serial |r₁z|=1.37 (threshold <3), runs p=0.8123 (threshold ≥0.01) over 500,000 rounds"
+    },
+    {
+      "step": 19,
+      "name": "Simulation Pass 2 — cherry-pick detection (casino seeds)",
+      "status": "PASS",
+      "detail": "5 flag(s) RECOMPUTED over 120 seeds (expected ~5.7 by chance at p₀=0.0475 = α(1−α), α=0.05 PINNED in src/config.ts — never derived from the artifact's own expectedFlagsByChance); binomial survival P=0.6789, threshold ≥0.01. Population bound to the dataset: 120/120 result rows, each matched one-to-one to a revealed seed record by (epoch, hashedServerSeed). earlyChi2 re-derived from the revealed seeds over the served nonces 0..49: 120/120 reproduce exactly. latePValue re-derived from lateChi2 at the pinned df 12: 120/120 agree. NOT recomputed here, and stated so: the raw lateChi2 over the 950-nonce control window (≈70 s of shoe derivations per run) and earlyBootstrapP (the bootstrap null is drawn from fresh entropy each simulate run and is not reproducible by construction). This statistic tests first-card RANK UNIFORMITY over the served window — it does not read settled MONEY at all, and the measured experiment (npm run attack, outputs/cherry-pick-attack.json) found no significant excess of flags on deliberately money-selected blocks: 8 over 120 against a chance rate of 5.7, survival P=0.2117. That is a null result at that experiment's size, not a proof of zero power — see AUDIT_CONTEXT.md#seed-selection-and-server-operations. Primary defence is the client-seed-after-commitment mitigation."
+    },
+    {
+      "step": 20,
+      "name": "House-edge reconciliation (nominal config vs actual)",
+      "status": "PASS",
+      "detail": "config houseEdge = 1.00% (nominal internal label) vs exact basic-strategy edge 0.4877% per initial bet (0.4324% per total amount wagered); 30,000,000-round simulation reads 0.4886% per initial bet [exact 8-deck solver (TD, per initial bet)]. Measured edge is well under the 1.00% config label under both conventions — the player is not worse off than that label; a disclosure, not a fairness defect (outcome integrity proven by Steps 1–16)."
+    },
+    {
+      "step": 21,
+      "name": "No FX haircut observed in this capture",
+      "status": "PASS",
+      "detail": "exchangeRate distribution over 12046 side-bet records: 12046×1.00000000; 0 main-game hands carry it (expected 0); 0 nonzero fiat amounts (expected 0). No haircut is observable: the fiat* fields are zero throughout and every crypto payout reconciles at face value from the cards (Step 8), with no fx factor in the reconstruction — so the field is not acting as a house-edge mechanism over this capture. It is NOT proven that the field never touches the crypto betAmount/winningAmount: at rate 1.00, applied-at-1.00 and not-applied are indistinguishable in the data. Schema-inferred fiat display field; ruling out the mechanism itself would need a capture at a rate other than 1.00, or source access."
+    },
+    {
+      "step": 22,
+      "name": "Captured $10 Round Reconstruction",
+      "status": "PASS",
+      "detail": "200/200 Phase E rounds at $10.00 recompute card-for-card from the revealed seed — 0 mismatch. The captured $10.00 rounds reproduce using the same reference shoe algorithm as the $0.10 rounds (stakes present: $0.1, $10). This checks reconstruction for the sampled inputs; it does not test stake-dependent seed selection, selective aborts, or behavior outside the sample"
+    },
+    {
+      "step": 23,
+      "name": "Side-Bet Config Completeness",
+      "status": "PASS",
+      "detail": "Perfect Pairs: 3/3 paytable categories observed across 5800 bets [MIXED_PAIR, COLORED_PAIR, PERFECT_PAIR]; 21+3: 5/5 observed across 5800 bets [FLUSH, STRAIGHT, THREE_OF_A_KIND, STRAIGHT_FLUSH, SUITED_THREE_OF_A_KIND]"
+    },
+    {
+      "step": 24,
+      "name": "Phase Coverage & Labels",
+      "status": "PASS",
+      "detail": "6 declared phases, all present with matching counts (A:3300/3300, B:1000/1000, C:500/500, D:500/500, E:200/200, F:500/500); declared total 6000 and observed total 6000 both equal the 6000 rounds the capture plan declares in src/config.ts"
+    },
+    {
+      "step": 25,
+      "name": "Artifact Hash Integrity",
+      "status": "PASS",
+      "detail": "6 pinned artifacts, present and matching their SHA-256 pins in src/config.ts, plus outputs/report-figures.json RE-DERIVED field for field (it is rewritten by every run, so a hash pin would be enforced against a file the same command replaces; recomputation proves the published figures are a deterministic function of the pinned dataset and the committed engines — NOT that the shipped file was independently produced, which is what the Wizard of Odds anchor is for) — data/blackjack-6000hands.json: c2a28c5164a5… matches; outputs/simulation-results.json: 782c05616498… matches; outputs/rtp-convergence.html: 321d58a6609e… matches; outputs/exact-rtp.json: db26864d6a72… matches; outputs/cherry-pick-attack.json: d69da9086664… matches; outputs/rng-branch-coverage.json: eb2c74a1ecf8… matches; outputs/report-figures.json: re-derived from the pinned dataset and reconciles field for field (10 top-level fields, incl. 2 worked examples)"
+    },
+    {
+      "step": 26,
+      "name": "Phase D Client-Seed Variation",
+      "status": "PASS",
+      "detail": "500/500 Phase D hands recompute under 10 distinct auditor client seeds — 0 mismatch; 490/500 deal a different first card under a canonical baseline seed (client seed genuinely feeds the derivation)"
+    },
+    {
+      "step": 27,
+      "name": "Split Rules Verification",
+      "status": "PASS",
+      "detail": "401 split rounds: 0 value-mismatched pairs (value-based split rule), 35 ace splits — 0 that did not draw exactly one card each (splitAcesOneCard), 0 rounds with >2 player hands. No re-split was observed; availability was not probed, so \"no re-split\" is ASSUMED of the rule set rather than demonstrated"
+    },
+    {
+      "step": 28,
+      "name": "Insurance Offer Condition",
+      "status": "PASS",
+      "detail": "446 insurance decisions, all on a dealer Ace upcard — 0 on a non-Ace upcard"
+    },
+    {
+      "step": 29,
+      "name": "Side-Bet Deal-Time Invariance",
+      "status": "PASS",
+      "detail": "11600/11600 side-bet card snapshots (Perfect Pairs + 21+3) all equal the player's initial two dealt cards — 0 mismatch"
+    },
+    {
+      "step": 30,
+      "name": "Deck-Model Confirmation",
+      "status": "PASS",
+      "detail": "1269/6000 rounds contain an exact-duplicate card (refutes single-deck); max copies of any exact card within a round = 3 (within the 8-deck bound)"
+    },
+    {
+      "step": 31,
+      "name": "Stake Bracket Bounds",
+      "status": "PASS",
+      "detail": "observed stakes $0.1, $10 — all within the declared brackets $0.1, $10"
+    }
+  ],
+  "info": [
+    {
+      "label": "Money-path reconciliation (all wagers incl. side bets + insurance)",
+      "detail": "4152.60 wagered + 86.65 insurance, 4155.35 returned = 98.0209% over 6000 hands — RECONCILIATION ONLY, not an RTP estimate (n=6,000 has ~±6pp money-weighted power)"
+    },
+    {
+      "label": "Money-path reconciliation (excl. insurance)",
+      "detail": "98.4696% — insurance (86.65 wagered, 66.30 returned) is a −EV side wager the capture placed on dealer-Ace hands"
+    },
+    {
+      "label": "Player natural blackjacks",
+      "detail": "253/6000 = 4.22% (8-deck expectation ≈ 4.75%)"
+    }
+  ]
+}
