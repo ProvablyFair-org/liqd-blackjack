@@ -535,6 +535,38 @@ A fresh, independently generated client seed supplied **after the server commitm
 
 The first-card rank and lag-1/runs statistics cover their named quantities. Passing them does not test every card position, suit pattern or possible dependence. The observed card reconstruction and the construction of the reference algorithm are separate evidence. Likewise, a statistical acceptance window describes a check's tolerance; it is not a guarantee of detecting every deviation within that window.
 
+
+### Load-bearing premises
+
+Every premise the verdict rests on, the artifact that witnesses it, and the question that decides how much scrutiny it needs: whether the captured data could have contradicted it. A premise the data cannot contradict carries a witness from outside this repository's own pipeline, or is marked ASSUMED. Agreement between the audit's own checks is not evidence for a premise the data cannot see.
+
+| Premise | Witness artifact | Could the captured data contradict it? |
+|---|---|---|
+| The RNG is HMAC-SHA256 with a hex-decoded key over `clientSeed:nonce:cursor`, feeding a backward Fisher-Yates shuffle of the 416-card shoe. The modulo-bias rejection guard is ASSUMED and listed as a separate premise below | `data/blackjack-6000hands.json` | Yes — all 6,000 dealt sequences reproduce bit for bit from the raw revealed seeds (Step 6 — Recomputation Parity); a single wrong constant breaks every round at once |
+| The commitment convention is SHA-256 over the UTF-8 server-seed hex string | `data/blackjack-6000hands.json` | Yes — 120 of 120 revealed seeds hash to their recorded commitments; a different convention fails all 120 |
+| The next-seed pre-commitment chain is intact | `data/blackjack-6000hands.json` | Yes — 119 of 119 successive links reconcile (Step 2) |
+| Settlement follows the recorded rules: naturals at 3:2, dealer stands on soft 17, with doubles, splits and insurance as recorded | `data/blackjack-6000hands.json` | Yes — all 6,000 top-level settled amounts reconcile from the recomputed cards, including 401 split rounds (Steps 8-13, 27) |
+| The side-bet paytables are as configured for Perfect Pairs and 21+3 | `data/blackjack-6000hands.json` | Yes — both side bets are re-derived from the initial cards across every round that carries them, with no category or payout mismatch (Steps 15, 16) |
+| The exact eight-deck basic-strategy edge is 0.4876748223% | `evidence/E16-storefront-edge-0.48.png` — the operator's own storefront figure of 0.48%, corroborated by the external calculator reference recorded in `outputs/exact-rtp.json`, which differs from the solver by about −5.2e-6 percentage points | Partial — the captured hands cannot measure the exact-strategy expectation, because 6,000 rounds of ordinary variance cannot resolve a figure at this precision. The number is anchored externally and by reduced-scale exact enumeration, never derived from the dataset (**L12**) |
+| The rule set is S17, double after split, no surrender, no re-split of aces, dealer peek with original bets only, naturals 3:2 | `data/blackjack-6000hands.json` | Partial — the dataset exhibits each of these wherever a round arises that exercises it, but the *availability* of the unused rules is a different claim: no surrender action occurs in the sample and no round goes above two hands, so neither availability was probed (**L5**) |
+| The operator applies a modulo-bias rejection guard equivalent to the reference implementation | ASSUMED — the branch is unexercised. All 2,490,000 draws across the reconstructed shoes accept their first 32-bit chunk, so no captured round distinguishes a guarded server from an unguarded one (**L2**) | **No** |
+| A credited win can be reconciled against a wallet balance change | ASSUMED — recorded game returns reconcile, but wallet balances and transaction deltas were not captured (**L4**) | **No** |
+| The `qa` build is the production build | ASSUMED — nothing in this package establishes it, and nothing is claimed about production (**L7**) | **No** |
+
+### Model anchors
+
+Every modelled headline number and the independent anchor that guards it. The reference value comes from outside the engine's own method, which is what makes it an anchor rather than the suite agreeing with itself.
+
+| Modelled figure | Anchor method | Tolerance | Enforcing step |
+|---|---|---|---|
+| The eight-deck total-dependent edge, and the return derived from it | Two independent anchors. First, an exact-rational enumerator over physically reduced shoes, which holes a concrete card and conditions nowhere, so a conditioning error is inexpressible in it. Second, the recorded external calculator reference for the same eight-deck inputs | 1e-12 against the enumerator; the external reference agrees to about 5.2e-6 percentage points | `tests/blackjack/exactOracleTests.ts`, `tests/blackjack/wooAnchorTests.ts`; Step 17 |
+| The infinite-deck regression value | An independent with-replacement analytical engine, pinned against drift | 1e-9 | `tests/blackjack/optimalPlayTests.ts` |
+| The Perfect Pairs side-bet edge | Exact integer enumeration of the full eight-deck two-card draw distribution, classified by the same evaluator that reconstructs every live Perfect Pairs settlement | Exact rational, no tolerance | `tests/blackjack/sideBetEdgeTests.ts`; Step 15 |
+| The 21+3 side-bet edge | The same method over the three-card distribution, with the evaluator shared with the live settlement check | Exact rational, no tolerance | `tests/blackjack/sideBetEdgeTests.ts`; Step 16 |
+| Shoe composition and deck count | Recomputation of the dealt sequence against a declared 416-card shoe, so a wrong deck count fails the parity check rather than being assumed | Exact | `tests/steps/parity.ts` (Step 6), Step 30 — Deck-Model Confirmation |
+
+**Residual, declared.** The small-shoe oracle shares its policy input, its reading of the rules and its implementer with the solver it checks (**L13**), so it establishes arithmetic correctness on the cases it enumerates rather than independent discovery of the rules or optimality of the policy. That residual is real and is not argued away. What narrows it: the enumerator is a physical enumeration over concrete reduced shoes rather than a second pass of the same conditioning logic, so the error class it is blind to is a rules misreading, not an arithmetic slip; and the headline edge additionally agrees with an external reference obtained outside this project. A second residual, named: the external reference is finite-precision, so agreement with it is bounded by its own published precision (**L12**). Certification remains provisional pending the production capture (**L7**).
+
 ## 9. Production verification plan
 
 The provisional certification marks the environment boundary. The QA assessment is complete; the next assessment will use ordinary authenticated play through the public production site, without the QA whitelist or a special audit game setup.
