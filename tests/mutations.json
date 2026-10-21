@@ -1,0 +1,1494 @@
+[
+  {
+    "name": "blackjack payout shifted off 3:2",
+    "file": "src/config.ts",
+    "find": "blackjackPays: [3, 2] as const,",
+    "replace": "blackjackPays: [29, 20] as const,",
+    "runner": "mocha",
+    "spec": "tests/blackjack/wooAnchorTests.ts",
+    "expect": "failing",
+    "guard": "wooAnchorTests (published 0.48768%) + exactOracleTests (1e-12) must reject an edge-shifting rule change",
+    "note": "Shifts the natural payout from 3:2 to 29:20 (1.5 -> 1.45) in src/config.ts RULES, the single rule source, which reaches the solver through LIQD_RULES. wooAnchorTests must fail."
+  },
+  {
+    "name": "artifact hand-edit: non-canonical formatting of simulation-results.json",
+    "file": "outputs/simulation-results.json",
+    "find": "\"cherryPickFlags\": 7,",
+    "replace": "\"cherryPickFlags\": 7.0,",
+    "runner": "mocha",
+    "spec": "tests/blackjack/artifactTests.ts",
+    "expect": "not byte-identical to its canonical re-serialisation",
+    "guard": "artifactTests round-trip — JSON.stringify(JSON.parse(raw),null,2) === raw rejects any reformatted/hand-edited pinned artifact",
+    "note": "Writes cherryPickFlags as 7.0 instead of 7: the same value in different bytes. The artifactTests round-trip must reject it as a hand edit."
+  },
+  {
+    "name": "artifact hand-edit: wrong cardRemovalLiftPP in simulation-results.json",
+    "file": "outputs/simulation-results.json",
+    "find": "\"cardRemovalLiftPP\": 0.08271318994897969,",
+    "replace": "\"cardRemovalLiftPP\": 0.09271318994897969,",
+    "runner": "mocha",
+    "spec": "tests/blackjack/artifactTests.ts",
+    "expect": "simulation-results.json hash ≠ the pinned SIMULATION_SHA256",
+    "guard": "OUTER: the SIMULATION_SHA256 pin — asserted in artifactTests and enforced again in verify.ts, which aborts before Steps 17-20 rather than scoring a substituted artifact. INNER (re-pinned, i.e. what a forger would do next): Step 17 recomputes (exact finite-8 TD RTP) - (infinite-deck optimal RTP) in-step and hard-FAILs on a >1e-9 mismatch, so a hand-pasted lift cannot survive a re-pin either.",
+    "repin": true,
+    "innerRunner": "verify",
+    "innerExpect": "[FAIL] Step 17"
+  },
+  {
+    "name": "twin-artifact drift: edit the convergence chart html without the json",
+    "file": "outputs/rtp-convergence.html",
+    "find": "99.5123%",
+    "replace": "99.5199%",
+    "runner": "mocha",
+    "spec": "tests/blackjack/artifactTests.ts",
+    "expect": "rtp-convergence.html hash ≠ the pinned SIMULATION_HTML_SHA256",
+    "guard": "SIMULATION_HTML_SHA256 pin — the chart and json are one run and are pinned together, so a stale/edited chart cannot ship beside a fresh json. No inner layer: nothing SCORES the chart, the pin is the whole guard, and that is stated rather than implied.",
+    "note": "Edits one RTP figure in the chart (99.5123% -> 99.5199%) and leaves the json alone. artifactTests asserts the SIMULATION_HTML_SHA256 pin, so the mocha run must name the mismatch; tests/verify.ts enforces the same pin before any step runs."
+  },
+  {
+    "name": "R1 — exact-rtp.json rtpPerTotalWagered -> 0.99 (README headline 0.432435% per total wagered)",
+    "file": "outputs/exact-rtp.json",
+    "find": "\"rtpPerTotalWagered\": 0.9956756493458622,",
+    "replace": "\"rtpPerTotalWagered\": 0.99,",
+    "runner": "mocha",
+    "spec": "tests/blackjack/exactSolverTests.ts",
+    "expect": "differs from a fresh buildExactArtifact()",
+    "guard": "exactSolverTests 'EVERY field of the committed outputs/exact-rtp.json is re-derived by buildExactArtifact()' — deepStrictEqual against a live solve, then byte identity",
+    "note": "Sets rtpPerTotalWagered, a field outside finite8TD, to 0.99. exactSolverTests re-derives every field of exact-rtp.json and must report the difference."
+  },
+  {
+    "name": "R2 — exact-rtp.json wooAnchor.basicStrategyContinuousShuffler -> 0.005",
+    "file": "outputs/exact-rtp.json",
+    "find": "\"basicStrategyContinuousShuffler\": 0.0048768,",
+    "replace": "\"basicStrategyContinuousShuffler\": 0.005,",
+    "runner": "mocha",
+    "spec": "tests/blackjack/exactSolverTests.ts",
+    "expect": "differs from a fresh buildExactArtifact()",
+    "guard": "same deep-compare — the whole wooAnchor block (source, settings, published constants, sixDeckExact, deltaVsFinite8TD) is re-derived, not just finite8TD",
+    "note": "Sets the published Wizard of Odds continuous-shuffler constant in wooAnchor to 0.005. exactSolverTests re-derives the whole wooAnchor block and must report the difference."
+  },
+  {
+    "name": "R3 — exact-rtp.json finite8TD.rtpPerInitialBet -> 0.99",
+    "file": "outputs/exact-rtp.json",
+    "find": "\"rtpPerInitialBet\": 0.9951232517767528,",
+    "replace": "\"rtpPerInitialBet\": 0.99,",
+    "runner": "mocha",
+    "spec": "tests/blackjack/exactSolverTests.ts",
+    "expect": "differs from a fresh buildExactArtifact()",
+    "guard": "same deep-compare — the headline finite8TD.rtpPerInitialBet is re-derived by buildExactArtifact(), so a hand-set 0.99 must be reported."
+  },
+  {
+    "name": "R4 — a scored step reads the capture-side `verified` flag by bracket access",
+    "file": "tests/steps/parity.ts",
+    "find": "    checked++;\n    if (!ok) { bad++;",
+    "replace": "    ok = Boolean((b as any)['verified']);\n    checked++;\n    if (!ok) { bad++;",
+    "runner": "mocha",
+    "spec": "tests/blackjack/antiCircularityTests.ts",
+    "expect": "capture-side field `verified` read by",
+    "guard": "antiCircularityTests lint sweep — it matches literal-bracket and destructuring reads of the capture-side fields as well as dotted access, so a bracket read of `verified` in a scored step must be named.",
+    "note": "Exercises the lint layer. The structural layer (src/loader.ts deletes the four capture-side fields before any step runs) also defeats the edit: the mutated read yields undefined and fails Step 6, and a computed key that evaded the lint would not evade the strip."
+  },
+  {
+    "name": "R5 — dataset: swap the epoch labels of two bets, then re-pin",
+    "file": "data/blackjack-6000hands.json",
+    "find": "      \"epoch\": 0,\n      \"phase\": \"A\",\n      \"id\": \"6hBu_VAq-lMp3UKjYMS1a\",",
+    "replace": "      \"epoch\": 1,\n      \"phase\": \"A\",\n      \"id\": \"6hBu_VAq-lMp3UKjYMS1a\",",
+    "edits": [
+      {
+        "file": "data/blackjack-6000hands.json",
+        "find": "      \"epoch\": 0,\n      \"phase\": \"A\",\n      \"id\": \"6hBu_VAq-lMp3UKjYMS1a\",",
+        "replace": "      \"epoch\": 1,\n      \"phase\": \"A\",\n      \"id\": \"6hBu_VAq-lMp3UKjYMS1a\","
+      },
+      {
+        "file": "data/blackjack-6000hands.json",
+        "find": "      \"epoch\": 1,\n      \"phase\": \"A\",\n      \"id\": \"q2klY0umDnHBUntdOmkBe\",",
+        "replace": "      \"epoch\": 0,\n      \"phase\": \"A\",\n      \"id\": \"q2klY0umDnHBUntdOmkBe\","
+      }
+    ],
+    "runner": "mocha",
+    "spec": "tests/blackjack/artifactTests.ts",
+    "expect": "blackjack-6000hands.json hash ≠ the pinned DATASET_SHA256",
+    "guard": "OUTER: the DATASET_SHA256 pin (asserted in artifactTests, enforced again by src/loader.ts, which aborts before any step runs). INNER, after re-pinning: Step 3 — Within-Epoch Hash Consistency groups by the numeric epoch label and requires every bet in a group to carry seeds[epoch]'s commitment, so a swapped label breaks the map.",
+    "repin": true,
+    "innerRunner": "verify",
+    "innerExpect": "[FAIL] Step 3"
+  },
+  {
+    "name": "R6 — dataset: e0/n0 actions [\"hit\"] -> [\"stand\"], then re-pin",
+    "file": "data/blackjack-6000hands.json",
+    "find": "\"actions\": [\n        \"hit\"\n      ],",
+    "replace": "\"actions\": [\n        \"stand\"\n      ],",
+    "edits": [
+      {
+        "file": "data/blackjack-6000hands.json",
+        "after": "\"id\": \"6hBu_VAq-lMp3UKjYMS1a\",",
+        "find": "\"actions\": [\n        \"hit\"\n      ],",
+        "replace": "\"actions\": [\n        \"stand\"\n      ],"
+      }
+    ],
+    "runner": "mocha",
+    "spec": "tests/blackjack/artifactTests.ts",
+    "expect": "blackjack-6000hands.json hash ≠ the pinned DATASET_SHA256",
+    "guard": "OUTER: DATASET_SHA256 pin. INNER, after re-pinning: Step 6 — the action/card cross-check requires (#hit + #double) to equal the cards drawn beyond two per hand; the hand drew a third card, so relabelling its `hit` to `stand` leaves one card unaccounted for.",
+    "repin": true,
+    "innerRunner": "verify",
+    "innerExpect": "[FAIL] Step 6"
+  },
+  {
+    "name": "R7 — dataset: e0/n0 actions [\"hit\"] -> [\"stand\",\"hit\"], then re-pin (count-preserving)",
+    "file": "data/blackjack-6000hands.json",
+    "find": "\"actions\": [\n        \"hit\"\n      ],",
+    "replace": "\"actions\": [\n        \"stand\",\n        \"hit\"\n      ],",
+    "edits": [
+      {
+        "file": "data/blackjack-6000hands.json",
+        "after": "\"id\": \"6hBu_VAq-lMp3UKjYMS1a\",",
+        "find": "\"actions\": [\n        \"hit\"\n      ],",
+        "replace": "\"actions\": [\n        \"stand\",\n        \"hit\"\n      ],"
+      }
+    ],
+    "runner": "mocha",
+    "spec": "tests/blackjack/artifactTests.ts",
+    "expect": "blackjack-6000hands.json hash ≠ the pinned DATASET_SHA256",
+    "guard": "OUTER: DATASET_SHA256 pin. INNER, after re-pinning: Step 6 — action GRAMMAR. #hit + #double is still 1, so the count-only cross-check is blind to this edit; the grammar rejects a token that follows the round's last terminal.",
+    "repin": true,
+    "innerRunner": "verify",
+    "innerExpect": "[FAIL] Step 6",
+    "note": "Inserts `stand` before the hand's only `hit`, which keeps the hit/double count equal to the cards drawn beyond two. Step 6's grammar must reject it."
+  },
+  {
+    "name": "R8 — src/config.ts Perfect Pairs COLORED_PAIR 13 -> 12",
+    "file": "src/config.ts",
+    "find": "COLORED_PAIR: 13,",
+    "replace": "COLORED_PAIR: 12,",
+    "runner": "verify",
+    "expect": "[FAIL] Step 15",
+    "guard": "Step 15 — Perfect Pairs Side Bet recomputes every colored-pair settlement in the capture from this paytable, so a wrong multiplier is contradicted by the live wins."
+  },
+  {
+    "name": "R9 — dataset: flip the last nibble of the epoch-0 server seed, then re-pin",
+    "file": "data/blackjack-6000hands.json",
+    "find": "\"serverSeed\": \"6dca5e36b6b9dc56730e282ab3c2bae6\",",
+    "replace": "\"serverSeed\": \"6dca5e36b6b9dc56730e282ab3c2bae7\",",
+    "runner": "mocha",
+    "spec": "tests/blackjack/artifactTests.ts",
+    "expect": "blackjack-6000hands.json hash ≠ the pinned DATASET_SHA256",
+    "guard": "OUTER: DATASET_SHA256 pin. INNER, after re-pinning: Step 1 — Commitment Reveal, because SHA-256 of the altered seed no longer equals the recorded hashedServerSeed. Step 6 fails with it: the shoe rebuilt from the altered seed deals different cards.",
+    "repin": true,
+    "innerRunner": "verify",
+    "innerExpect": "[FAIL] Step 1"
+  },
+  {
+    "name": "R10 — dataset: e0/n12 natural pays 0.25 -> 0.2 (3:2 downgraded to 1:1 — even money), then re-pin",
+    "file": "data/blackjack-6000hands.json",
+    "find": "\"winningAmount\": 0.25,",
+    "replace": "\"winningAmount\": 0.2,",
+    "edits": [
+      {
+        "file": "data/blackjack-6000hands.json",
+        "after": "\"id\": \"mpWMQllDG1ErqaG6SQR8T\",",
+        "find": "\"winningAmount\": 0.25,",
+        "replace": "\"winningAmount\": 0.2,"
+      }
+    ],
+    "runner": "mocha",
+    "spec": "tests/blackjack/artifactTests.ts",
+    "expect": "blackjack-6000hands.json hash ≠ the pinned DATASET_SHA256",
+    "guard": "OUTER: DATASET_SHA256 pin. INNER, after re-pinning: Step 8 — Per-Hand Payout reconstructs every credit from the dealt cards, so a natural credited 0.2 on a 0.10 stake contradicts the reconstruction. Step 9 (Blackjack Pays 3:2) fails with it. On a 0.10 stake a total return of 0.20 is 2x, i.e. EVEN MONEY (1:1), not 6:5, which would return 0.22; R36 is the 6:5 case.",
+    "repin": true,
+    "innerRunner": "verify",
+    "innerExpect": "[FAIL] Step 8"
+  },
+  {
+    "name": "R11 — off-grid money: e0/n12 credit +1e-9 (below the 1e-6 reconciliation tolerance), then re-pin",
+    "file": "data/blackjack-6000hands.json",
+    "find": "\"winningAmount\": 0.25,",
+    "replace": "\"winningAmount\": 0.250000001,",
+    "edits": [
+      {
+        "file": "data/blackjack-6000hands.json",
+        "after": "\"id\": \"mpWMQllDG1ErqaG6SQR8T\",",
+        "find": "\"winningAmount\": 0.25,",
+        "replace": "\"winningAmount\": 0.250000001,"
+      }
+    ],
+    "runner": "mocha",
+    "spec": "tests/blackjack/artifactTests.ts",
+    "expect": "blackjack-6000hands.json hash ≠ the pinned DATASET_SHA256",
+    "guard": "OUTER: DATASET_SHA256 pin. INNER, after re-pinning: Step 8 — the money-GRID assertion. Every recorded amount must be an exact multiple of 1e-8 (capture accounting precision); a +1e-9 perturbation is off-grid. The grid check rejects this off-grid amount before exact integer payout reconciliation.",
+    "repin": true,
+    "innerRunner": "verify",
+    "innerExpect": "[FAIL] Step 8",
+    "note": "Adds 1e-9 to one natural's credit (0.25 -> 0.250000001): below the 1e-6 reconciliation tolerance but off the 1e-8 settlement grid. Step 8's grid assertion must reject it."
+  },
+  {
+    "name": "R12 — forged exact-rtp.json: rtpPerInitialBet -> 0.5 (a nonsense value)",
+    "file": "outputs/exact-rtp.json",
+    "find": "\"rtpPerInitialBet\": 0.9951232517767528,",
+    "replace": "\"rtpPerInitialBet\": 0.5,",
+    "runner": "mocha",
+    "expect": "exact-rtp.json hash ≠ the pinned EXACT_RTP_SHA256",
+    "guard": "THREE layers, all executed. OUTER: the EXACT_RTP_SHA256 pin asserted in artifactTests. ALSO: the same pin enforced in tests/verify.ts, which refuses to score; no scored step prints because the pin is fail-fast. INNER, after re-pinning the forged file (what a forger does next): exactSolverTests re-derives every field from buildExactArtifact() and the deep-compare rejects it — a hash says the bytes did not move, the re-derivation says the numbers are the real solve.",
+    "repin": true,
+    "innerRunner": "mocha",
+    "innerSpec": "tests/blackjack/exactSolverTests.ts",
+    "innerExpect": "differs from a fresh buildExactArtifact()",
+    "note": "Sets rtpPerInitialBet to 0.5. It must be caught three times: by the pin in artifactTests, by the same pin in tests/verify.ts before any step is scored, and, after a re-pin, by the field-by-field re-derivation in exactSolverTests.",
+    "spec": "tests/blackjack/artifactTests.ts",
+    "alsoRunner": "verify",
+    "alsoExpect": "Exact-RTP artifact hash mismatch"
+  },
+  {
+    "name": "R13 — dataset header restated to a shrunken plan: meta.plannedTotal 6000 -> 5950, then re-pin",
+    "file": "data/blackjack-6000hands.json",
+    "find": "\"plannedTotal\": 6000,",
+    "replace": "\"plannedTotal\": 5950,",
+    "runner": "mocha",
+    "spec": "tests/blackjack/artifactTests.ts",
+    "expect": "blackjack-6000hands.json hash ≠ the pinned DATASET_SHA256",
+    "guard": "OUTER: DATASET_SHA256 pin. INNER, after re-pinning: Step 5 — the dataset's own header fields (meta.epochSize, meta.plannedTotal, meta.progress.bets, meta.progress.seeds) are scored AGAINST src/config.ts's EXPECTED_* constants, so the plan cannot be restated to match a shrunken capture.",
+    "repin": true,
+    "innerRunner": "verify",
+    "innerExpect": "[FAIL] Step 5",
+    "note": "Header half of a whole-epoch deletion: with one epoch (50 rounds and its seeds[] record) removed, meta.plannedTotal would be restated 6000 -> 5950 to stay consistent. A find/replace cannot delete an epoch, so this entry carries the header edit only; Step 5 must fail."
+  },
+  {
+    "name": "R14 — phase table restated to a shrunken plan: meta.phases.F.hands 500 -> 450, then re-pin",
+    "file": "data/blackjack-6000hands.json",
+    "find": "\"F\": {\n        \"hands\": 500,",
+    "replace": "\"F\": {\n        \"hands\": 450,",
+    "runner": "mocha",
+    "spec": "tests/blackjack/artifactTests.ts",
+    "expect": "blackjack-6000hands.json hash ≠ the pinned DATASET_SHA256",
+    "guard": "OUTER: DATASET_SHA256 pin. INNER, after re-pinning: Step 24 — the declared phase table must SUM to EXPECTED_HANDS from src/config.ts, not merely agree row-by-row with the rows it is compared to. meta.phases lives inside the file being scored, so a row-by-row comparison alone is self-referential and would pass this edit once the matching rounds were removed.",
+    "repin": true,
+    "innerRunner": "verify",
+    "innerExpect": "[FAIL] Step 24",
+    "note": "Phase-table half of the same whole-epoch deletion as R13: meta.phases.F.hands restated 500 -> 450. Step 24 must fail because the table no longer sums to EXPECTED_HANDS."
+  },
+  {
+    "name": "R15 — truncate an epoch's declared nonce window: seeds[0].nonceEnd 49 -> 48, then re-pin",
+    "file": "data/blackjack-6000hands.json",
+    "find": "\"nonceEnd\": 49,",
+    "replace": "\"nonceEnd\": 48,",
+    "runner": "mocha",
+    "spec": "tests/blackjack/artifactTests.ts",
+    "expect": "blackjack-6000hands.json hash ≠ the pinned DATASET_SHA256",
+    "guard": "OUTER: DATASET_SHA256 pin. INNER, after re-pinning: Step 4 — nonce-window closure. Each seed record's nonceEnd must equal nonceStart + EXPECTED_EPOCH_SIZE - 1 AND a round must be present AT nonceEnd.",
+    "repin": true,
+    "innerRunner": "verify",
+    "innerExpect": "[FAIL] Step 4",
+    "note": "Truncates epoch 0's declared window (nonceEnd 49 -> 48). The seed record is written by the capture rig at rotation time and is independent of the bet rows, so it is the witness a truncation has to survive; Step 4 must fail."
+  },
+  {
+    "name": "R16 — meta.progress.seeds 120 -> 119, then re-pin",
+    "file": "data/blackjack-6000hands.json",
+    "find": "\"seeds\": 120,",
+    "replace": "\"seeds\": 119,",
+    "runner": "mocha",
+    "spec": "tests/blackjack/artifactTests.ts",
+    "expect": "blackjack-6000hands.json hash ≠ the pinned DATASET_SHA256",
+    "guard": "OUTER: DATASET_SHA256 pin. INNER, after re-pinning: Step 5 — meta.progress.seeds is scored against EXPECTED_SEEDS.",
+    "repin": true,
+    "innerRunner": "verify",
+    "innerExpect": "[FAIL] Step 5",
+    "note": "Restates the header seed count (120 -> 119); Step 5 must fail."
+  },
+  {
+    "name": "R17 — simulation claims 1,000,000 rounds instead of 30,000,000 (a 5.5x wider gate), then re-pin",
+    "file": "outputs/simulation-results.json",
+    "find": "\"rounds\": 30000000,",
+    "replace": "\"rounds\": 1000000,",
+    "runner": "mocha",
+    "spec": "tests/blackjack/artifactTests.ts",
+    "expect": "simulation-results.json hash ≠ the pinned SIMULATION_SHA256",
+    "guard": "OUTER: SIMULATION_SHA256 pin. INNER, after re-pinning: Step 17 — sigma is computed from the PINNED SIM_BASE_ROUNDS in src/config.ts and the artifact's own baseGame.rounds must equal that pin, so the file being gated cannot widen its own tolerance by understating its round count.",
+    "repin": true,
+    "innerRunner": "verify",
+    "innerExpect": "[FAIL] Step 17",
+    "note": "Understates the simulation's round count (30,000,000 -> 1,000,000), which would widen a tolerance computed from the file by 5.5x. The round count alone must fail Step 17; no forged RTP is needed."
+  },
+  {
+    "name": "R18 — chi-squared df supplied by the artifact: firstCardDf 12 -> 100000, then re-pin",
+    "file": "outputs/simulation-results.json",
+    "find": "\"firstCardDf\": 12,",
+    "replace": "\"firstCardDf\": 100000,",
+    "runner": "mocha",
+    "spec": "tests/blackjack/artifactTests.ts",
+    "expect": "simulation-results.json hash ≠ the pinned SIMULATION_SHA256",
+    "guard": "OUTER: SIMULATION_SHA256 pin. INNER, after re-pinning: Step 18 — df is PINNED as RANKS-1 in src/config.ts and the artifact's firstCardDf must agree with it; a contradiction is a hard FAIL, not a flag. A df taken from the artifact would let chi2=9999 at df=100000 give p=1 and pass.",
+    "repin": true,
+    "innerRunner": "verify",
+    "innerExpect": "[FAIL] Step 18",
+    "note": "Sets the first-card chi-squared df in the artifact to 100,000. Step 18 must fail on the df alone."
+  },
+  {
+    "name": "R19 — every epoch flagged, hidden by a forged null: cherryPickFlags 7 -> 120, then re-pin",
+    "file": "outputs/simulation-results.json",
+    "find": "\"cherryPickFlags\": 7,",
+    "replace": "\"cherryPickFlags\": 120,",
+    "edits": [
+      {
+        "file": "outputs/simulation-results.json",
+        "find": "\"cherryPickFlags\": 7,",
+        "replace": "\"cherryPickFlags\": 120,"
+      },
+      {
+        "file": "outputs/simulation-results.json",
+        "find": "\"expectedFlagsByChance\": 5.7,",
+        "replace": "\"expectedFlagsByChance\": 120,"
+      },
+      {
+        "file": "outputs/simulation-results.json",
+        "find": "\"cherryPickSurvivalP\": 0.3444226688337322,",
+        "replace": "\"cherryPickSurvivalP\": 1,"
+      }
+    ],
+    "runner": "mocha",
+    "spec": "tests/blackjack/artifactTests.ts",
+    "expect": "simulation-results.json hash ≠ the pinned SIMULATION_SHA256",
+    "guard": "OUTER: SIMULATION_SHA256 pin. INNER, after re-pinning: Step 19 — p0 is PASS2_P0 = alpha(1-alpha) from src/config.ts, never expectedFlagsByChance/seeds_tested, and cherryPickFlags is RECOMPUTED from the rows' own predicate rather than read. A p0 derived from the two artifact fields would turn both set to 120 into p0 = 1, survival = 1, and a PASS for a dataset in which EVERY epoch had flagged.",
+    "repin": true,
+    "innerRunner": "verify",
+    "innerExpect": "[FAIL] Step 19",
+    "note": "Sets cherryPickFlags, expectedFlagsByChance and cherryPickSurvivalP together (7 -> 120, 5.7 -> 120, 0.344 -> 1) so the summary stays self-consistent. Step 19 must fail because it recomputes the flags and takes p0 from src/config.ts."
+  },
+  {
+    "name": "R20 — forge a per-seed Pass-2 statistic: results[0].earlyChi2 6.03 -> 60.3, then re-pin",
+    "file": "outputs/simulation-results.json",
+    "find": "\"earlyChi2\": 6.03,",
+    "replace": "\"earlyChi2\": 60.3,",
+    "runner": "mocha",
+    "spec": "tests/blackjack/artifactTests.ts",
+    "expect": "simulation-results.json hash ≠ the pinned SIMULATION_SHA256",
+    "guard": "OUTER: SIMULATION_SHA256 pin. INNER, after re-pinning: Step 19 re-derives earlyChi2 for EVERY seed from the revealed serverSeed + clientSeed over the served nonces 0..49 and requires exact agreement (1e-9).",
+    "repin": true,
+    "innerRunner": "verify",
+    "innerExpect": "[FAIL] Step 19",
+    "note": "Forges epoch 0's early chi-squared statistic (6.03 -> 60.3). Each seed's statistic is recomputable from the revealed seeds in the dataset, so Step 19 must fail on the disagreement."
+  },
+  {
+    "name": "R21 — DELETE outputs/exact-rtp.json (a pinned artifact simply absent)",
+    "file": "outputs/exact-rtp.json",
+    "find": "",
+    "replace": "",
+    "edits": [
+      {
+        "file": "outputs/exact-rtp.json",
+        "delete": true
+      }
+    ],
+    "runner": "verify",
+    "expect": "[FAIL] Step 25",
+    "guard": "Step 25 — Artifact Hash Integrity asserts PRESENCE as well as hash for the pinned artifacts. A pin inside `if (fs.existsSync(...))` would let a deleted file skip the guard and report 31/31 · PROVABLY FAIR — Full Pass · exit 0.",
+    "note": "Deletes outputs/exact-rtp.json through the runner's `delete` edit (the top-level find/replace is empty). Step 25 must fail on the missing file."
+  },
+  {
+    "name": "R22 — DELETE outputs/rtp-convergence.html (the twin pinned artifact)",
+    "file": "outputs/rtp-convergence.html",
+    "find": "",
+    "replace": "",
+    "edits": [
+      {
+        "file": "outputs/rtp-convergence.html",
+        "delete": true
+      }
+    ],
+    "runner": "verify",
+    "expect": "[FAIL] Step 25",
+    "guard": "Step 25 — same presence assertion. A separate entry from R21 because each pinned artifact needs its own presence check; covering one does not cover the other.",
+    "note": "Deletes outputs/rtp-convergence.html through the runner's `delete` edit (the top-level find/replace is empty). Step 25 must fail on the missing file."
+  },
+  {
+    "name": "R23 — strip exchangeRate from ALL 12,046 side-bet records, then re-pin",
+    "file": "data/blackjack-6000hands.json",
+    "find": "\"exchangeRate\": \"1.00000000\",",
+    "replace": "",
+    "edits": [
+      {
+        "file": "data/blackjack-6000hands.json",
+        "find": "\"exchangeRate\": \"1.00000000\",\n          ",
+        "replace": "",
+        "replaceAll": true
+      }
+    ],
+    "runner": "mocha",
+    "spec": "tests/blackjack/artifactTests.ts",
+    "expect": "blackjack-6000hands.json hash ≠ the pinned DATASET_SHA256",
+    "guard": "OUTER: DATASET_SHA256 pin. INNER, after re-pinning: Step 21 — `fxRecords > 0`. The step's other two conditions are 'expected 0', which an empty set satisfies for free, so the coverage assertion is what rejects a dataset with the field removed.",
+    "repin": true,
+    "innerRunner": "verify",
+    "innerExpect": "[FLAG] Step 21",
+    "note": "Removes exchangeRate from every side-bet record with `replaceAll`; a single-record edit would not empty the set. Step 21 must flag the empty population."
+  },
+  {
+    "name": "R24 — a lost doubled round relabelled [\"double\"] -> [\"hit\",\"stand\"], `doubled` left true, then re-pin",
+    "file": "data/blackjack-6000hands.json",
+    "find": "\"actions\": [\n        \"double\"\n      ],",
+    "replace": "\"actions\": [\n        \"hit\",\n        \"stand\"\n      ],",
+    "edits": [
+      {
+        "file": "data/blackjack-6000hands.json",
+        "after": "\"id\": \"lEu_dHka5FS_S4HD7SJIC\"",
+        "find": "\"actions\": [\n        \"double\"\n      ],",
+        "replace": "\"actions\": [\n        \"hit\",\n        \"stand\"\n      ],"
+      }
+    ],
+    "runner": "mocha",
+    "spec": "tests/blackjack/artifactTests.ts",
+    "expect": "blackjack-6000hands.json hash ≠ the pinned DATASET_SHA256",
+    "guard": "OUTER: DATASET_SHA256 pin. INNER, after re-pinning: Step 6 — action grammar G6 binds `bet.doubled` to the token stream ((#double > 0) === bet.doubled). `doubled` is an operator summary boolean that nothing else checks, and Step 8b's m-factor is unidentifiable on a LOST round (base credit 0, so base x 1 and base x 2 are both 0), which is why the target is a lost round.",
+    "repin": true,
+    "innerRunner": "verify",
+    "innerExpect": "[FAIL] Step 6",
+    "note": "Target is epoch 0 nonce 28 (id lEu_dHka5FS_S4HD7SJIC), doubled and lost: its `double` becomes `hit`, `stand` while `doubled` stays true. Step 6 grammar G6 must fail."
+  },
+  {
+    "name": "R25 — a busted round relabelled [\"hit\"] -> [\"double\"], `doubled` left false, then re-pin",
+    "file": "data/blackjack-6000hands.json",
+    "find": "\"actions\": [\n        \"hit\"\n      ],",
+    "replace": "\"actions\": [\n        \"double\"\n      ],",
+    "edits": [
+      {
+        "file": "data/blackjack-6000hands.json",
+        "after": "\"id\": \"1YMJ6NQQDEhAFwrRGCYd1\"",
+        "find": "\"actions\": [\n        \"hit\"\n      ],",
+        "replace": "\"actions\": [\n        \"double\"\n      ],"
+      }
+    ],
+    "runner": "mocha",
+    "spec": "tests/blackjack/artifactTests.ts",
+    "expect": "blackjack-6000hands.json hash ≠ the pinned DATASET_SHA256",
+    "guard": "OUTER: DATASET_SHA256 pin. INNER, after re-pinning: Step 6 — grammar G6, the other direction. Uncaught, the edit would add one stake to the reported total wagered, because the money-path reconciliation counts one extra stake per `double` token.",
+    "repin": true,
+    "innerRunner": "verify",
+    "innerExpect": "[FAIL] Step 6",
+    "note": "Target is epoch 0 nonce 7 (id 1YMJ6NQQDEhAFwrRGCYd1), a bust with a single `hit`, relabelled `double` while `doubled` stays false. Step 6 grammar G6 must fail."
+  },
+  {
+    "name": "R26 — a `stand` appended to a single hand that auto-ended at 21: [\"hit\"] -> [\"hit\",\"stand\"], then re-pin",
+    "file": "data/blackjack-6000hands.json",
+    "find": "\"actions\": [\n        \"hit\"\n      ],",
+    "replace": "\"actions\": [\n        \"hit\",\n        \"stand\"\n      ],",
+    "edits": [
+      {
+        "file": "data/blackjack-6000hands.json",
+        "after": "\"id\": \"6hBu_VAq-lMp3UKjYMS1a\"",
+        "find": "\"actions\": [\n        \"hit\"\n      ],",
+        "replace": "\"actions\": [\n        \"hit\",\n        \"stand\"\n      ],"
+      }
+    ],
+    "runner": "mocha",
+    "spec": "tests/blackjack/artifactTests.ts",
+    "expect": "blackjack-6000hands.json hash ≠ the pinned DATASET_SHA256",
+    "guard": "OUTER: DATASET_SHA256 pin. INNER, after re-pinning: Step 6 — action grammar G5b. This is the MIRROR of R7: R7 put a token AFTER the terminal (caught by G2), this one puts a legal-looking terminal on a hand that could not have acted. Epoch 0 nonce 0 draws to exactly 21, and a single hand reaching 21 auto-ends and emits no terminal — witnessed on all 5,599 single-hand rounds (467 of them finish at 21 with no terminal; `stand` appears only at totals <= 20). G5b is scoped to single-hand rounds ON PURPOSE: 14 of the 401 split rounds DO carry a `stand` on a hand that finished at 21, so the tidy universal rule is false here and asserting it would manufacture 14 violations against real captured play.",
+    "repin": true,
+    "innerRunner": "verify",
+    "innerExpect": "[FAIL] Step 6",
+    "note": "Appends `stand` to epoch 0 nonce 0, a single hand that drew to 21. Step 6 grammar G5b must fail. The related case, `stand` on a busted hand, is rejected by G5a (#stand <= #hands finishing at 21 or under, 0 violations in 6,000/6,000); no entry here executes it."
+  },
+  {
+    "name": "R27 — drop one side bet's card snapshot: perfectPair.playerHand removed from epoch 0 nonce 0, then re-pin",
+    "file": "data/blackjack-6000hands.json",
+    "find": "\"playerHand\": [\n            \"HEART:7\",\n            \"HEART:9\"\n          ],\n          ",
+    "replace": "",
+    "edits": [
+      {
+        "file": "data/blackjack-6000hands.json",
+        "after": "\"roundId\": \"6hBu_VAq-lMp3UKjYMS1a\"",
+        "find": "\"playerHand\": [\n            \"HEART:7\",\n            \"HEART:9\"\n          ],\n          ",
+        "replace": ""
+      }
+    ],
+    "runner": "mocha",
+    "spec": "tests/blackjack/artifactTests.ts",
+    "expect": "blackjack-6000hands.json hash ≠ the pinned DATASET_SHA256",
+    "guard": "OUTER: DATASET_SHA256 pin. INNER, after re-pinning: Step 29 — the side-bet snapshot count is bound to each round's independent `sideFunded` declaration, so a dropped snapshot fails the coverage assertion rather than shrinking the denominator. This also exercises the Steps 15/16 fallback path, which uses the split-aware initialTwo() from tests/steps/hands.ts (playerHands[0].cards is the wrong pair of cards on 392 of the 401 split rounds).",
+    "repin": true,
+    "innerRunner": "verify",
+    "innerExpect": "[FAIL] Step 29",
+    "note": "Removes perfectPair.playerHand from epoch 0 nonce 0. The fallback is inert on the committed capture (all 11,600 snapshots are present), so this edit is what exercises it; Step 29 must fail."
+  },
+  {
+    "name": "R28 — forged report figure: moneyPath.returnedUsdc 4155.35 -> 4999.99 (the money-path reconciliation the chapters quote)",
+    "file": "outputs/report-figures.json",
+    "find": "\"returnedUsdc\": 4155.35,",
+    "replace": "\"returnedUsdc\": 4999.99,",
+    "runner": "verify",
+    "expect": "[FAIL] Step 25",
+    "guard": "Step 25 — Artifact Hash Integrity re-derives outputs/report-figures.json from the pinned dataset through buildReportFiguresArtifact() and compares it field for field. 4,155.35 returned is the number MANIFEST.md#payouts-and-rtp quotes for the live money path.",
+    "note": "Raises the money-path returned total (4155.35 -> 4999.99). outputs/report-figures.json is the producing artifact for the report’s prose figures. Step 25 re-derives it through the same builder tests/verify.ts writes with (`buildReportFiguresArtifact`) and compares it field for field, so the edit must fail Step 25."
+  },
+  {
+    "name": "R29 — a worked-example population member emptied to {}",
+    "file": "outputs/report-figures.json",
+    "find": "        {\n          \"label\": \"hand 1 (doubled)\",\n          \"amountUsdc\": 0.4\n        },\n",
+    "replace": "        {},\n",
+    "runner": "verify",
+    "expect": "[FAIL] Step 25",
+    "guard": "Step 25 — the field-for-field re-derivation. An emptied population member changes the component list of the split/double worked example that MANIFEST.md#verify-a-bet walks through, and the recomputation from the capture puts it back.",
+    "note": "Empties one member of the worked example's component list to {}. outputs/report-figures.json is the producing artifact for the report’s prose figures. Step 25 re-derives it through the same builder tests/verify.ts writes with (`buildReportFiguresArtifact`) and compares it field for field, so the edit must fail Step 25."
+  },
+  {
+    "name": "R30 — a worked-example population member duplicated, count preserved",
+    "file": "outputs/report-figures.json",
+    "find": "        {\n          \"label\": \"hand 2 (doubled)\",\n          \"amountUsdc\": 0.4\n        },\n",
+    "replace": "        {\n          \"label\": \"hand 1 (doubled)\",\n          \"amountUsdc\": 0.4\n        },\n",
+    "runner": "verify",
+    "expect": "[FAIL] Step 25",
+    "guard": "Step 25 — the field-for-field re-derivation. Count-preserving duplication is invisible to any check that only counts rows; the recomputation reproduces hand 2 from the capture and the label mismatch is reported by path.",
+    "note": "Replaces hand 2 of the worked example with a copy of hand 1, keeping the count. outputs/report-figures.json is the producing artifact for the report’s prose figures. Step 25 re-derives it through the same builder tests/verify.ts writes with (`buildReportFiguresArtifact`) and compares it field for field, so the edit must fail Step 25."
+  },
+  {
+    "name": "R31 — worked example shrunk from four components to three, credited + sum restated to stay self-consistent",
+    "file": "outputs/report-figures.json",
+    "find": "          \"amountUsdc\": 0.7\n        },\n        {\n          \"label\": \"twentyOnePlusThree\",\n          \"amountUsdc\": 3.1\n        }\n",
+    "replace": "          \"amountUsdc\": 0.7\n        }\n",
+    "edits": [
+      {
+        "file": "outputs/report-figures.json",
+        "find": "          \"amountUsdc\": 0.7\n        },\n        {\n          \"label\": \"twentyOnePlusThree\",\n          \"amountUsdc\": 3.1\n        }\n",
+        "replace": "          \"amountUsdc\": 0.7\n        }\n"
+      },
+      {
+        "file": "outputs/report-figures.json",
+        "find": "\"componentsSumUsdc\": 4.6,",
+        "replace": "\"componentsSumUsdc\": 1.5,"
+      },
+      {
+        "file": "outputs/report-figures.json",
+        "find": "\"credited\": 4.6,",
+        "replace": "\"credited\": 1.5,"
+      }
+    ],
+    "runner": "verify",
+    "expect": "[FAIL] Step 25",
+    "guard": "Step 25 — the field-for-field re-derivation. The forgery is internally consistent (0.40 + 0.40 + 0.70 = 1.50 credited, reconciles true), so nothing inside the artifact contradicts it; only a recomputation from the capture does. This is the shape that hides a dropped side-bet leg from the payout chapter.",
+    "note": "Drops the 21+3 component from the worked example and restates credited and the component sum to 1.50, so the artifact stays self-consistent. outputs/report-figures.json is the producing artifact for the report’s prose figures. Step 25 re-derives it through the same builder tests/verify.ts writes with (`buildReportFiguresArtifact`) and compares it field for field, so the edit must fail Step 25."
+  },
+  {
+    "name": "R32 — report-figures rtp/edge fields set to 0.5 (self-consistent nonsense)",
+    "file": "outputs/report-figures.json",
+    "find": "\"realizedRtpInclInsurancePct\": 98.02087633425724,",
+    "replace": "\"realizedRtpInclInsurancePct\": 0.5,",
+    "edits": [
+      {
+        "file": "outputs/report-figures.json",
+        "find": "\"realizedRtpInclInsurancePct\": 98.02087633425724,",
+        "replace": "\"realizedRtpInclInsurancePct\": 0.5,"
+      },
+      {
+        "file": "outputs/report-figures.json",
+        "find": "\"realizedRtpExInsurancePct\": 98.46963348263739",
+        "replace": "\"realizedRtpExInsurancePct\": 0.5"
+      },
+      {
+        "file": "outputs/report-figures.json",
+        "find": "\"perfectPairsEdgePct\": 2.1686746987951806,",
+        "replace": "\"perfectPairsEdgePct\": 0.5,"
+      }
+    ],
+    "runner": "verify",
+    "expect": "[FAIL] Step 25",
+    "guard": "Step 25 — the field-for-field re-derivation. 98.0209% / 98.4696% are the realized-return figures MANIFEST.md#payouts-and-rtp quotes, and 2.1687% is the exact Perfect Pairs edge MANIFEST.md quotes; all three are recomputed here from the capture and the exact enumeration.",
+    "note": "Sets the two realized-return percentages and the Perfect Pairs edge to 0.5. outputs/report-figures.json is the producing artifact for the report’s prose figures. Step 25 re-derives it through the same builder tests/verify.ts writes with (`buildReportFiguresArtifact`) and compares it field for field, so the edit must fail Step 25."
+  },
+  {
+    "name": "R33 — DELETE outputs/report-figures.json (the artifact of record for the prose figures, simply absent)",
+    "file": "outputs/report-figures.json",
+    "find": "",
+    "replace": "",
+    "edits": [
+      {
+        "file": "outputs/report-figures.json",
+        "delete": true
+      }
+    ],
+    "runner": "verify",
+    "expect": "[FAIL] Step 25",
+    "guard": "Step 25 — absence is a FAIL, not a silent regeneration. tests/verify.ts rewrites this file at the END of a run, so an unguarded run recreates a deleted artifact and reports a clean pass. The file is an artifact of record: .gitignore un-ignores it (`!outputs/report-figures.json`), MANIFEST.md#evidence carries it as E21, and MANIFEST.md cites it by name as the trace for published figures.",
+    "note": "Deletes outputs/report-figures.json through the runner's `delete` edit (the top-level find/replace is empty). Step 25 must fail on the missing file rather than let tests/verify.ts regenerate it at the end of the run."
+  },
+  {
+    "name": "R34 — on-grid underpayment: e0/n0 per-hand credit 0.2 -> 0.1999995 (50 settlement units short), then re-pin",
+    "file": "data/blackjack-6000hands.json",
+    "find": "\"winningAmount\": 0.2,",
+    "replace": "\"winningAmount\": 0.1999995,",
+    "edits": [
+      {
+        "file": "data/blackjack-6000hands.json",
+        "after": "\"id\": \"6hBu_VAq-lMp3UKjYMS1a\",",
+        "find": "\"winningAmount\": 0.2,",
+        "replace": "\"winningAmount\": 0.1999995,"
+      }
+    ],
+    "runner": "mocha",
+    "spec": "tests/blackjack/artifactTests.ts",
+    "expect": "blackjack-6000hands.json hash ≠ the pinned DATASET_SHA256",
+    "guard": "OUTER: DATASET_SHA256 pin. INNER, after re-pinning: Step 8 — the per-hand reconstruction and the round-level money path, both compared as EXACT INTEGER equality in 1e-8 settlement units. 0.1999995 is a legal grid amount (19,999,950 units) and is 50 units SHORT of the 20,000,000 the cards and rules require, so it is a genuine underpayment that a 1e-6 float tolerance could not see and the grid assertion alone does not catch — the two checks are complementary, not redundant.",
+    "repin": true,
+    "innerRunner": "verify",
+    "innerExpect": "[FAIL] Step 8",
+    "note": "Shorts one per-hand credit by 50 settlement units (0.2 -> 0.1999995), a legal grid amount. Step 8's exact integer reconciliation must fail."
+  },
+  {
+    "name": "R35 — one-unit money error: e0/n0 per-hand credit 0.2 -> 0.19999999 (1 settlement unit short), then re-pin",
+    "file": "data/blackjack-6000hands.json",
+    "find": "\"winningAmount\": 0.2,",
+    "replace": "\"winningAmount\": 0.19999999,",
+    "edits": [
+      {
+        "file": "data/blackjack-6000hands.json",
+        "after": "\"id\": \"6hBu_VAq-lMp3UKjYMS1a\",",
+        "find": "\"winningAmount\": 0.2,",
+        "replace": "\"winningAmount\": 0.19999999,"
+      }
+    ],
+    "runner": "mocha",
+    "spec": "tests/blackjack/artifactTests.ts",
+    "expect": "blackjack-6000hands.json hash ≠ the pinned DATASET_SHA256",
+    "guard": "OUTER: DATASET_SHA256 pin. INNER, after re-pinning: Step 8. The SMALLEST discrepancy that can exist on the 1e-8 settlement grid — one unit — must still fail. This is the boundary case for the GRID_TOL=1e-3 units constant used when reading a JSON double back onto the grid: it has to absorb the measured 1.2e-7 units of IEEE-754 representation noise while never absorbing a one-unit money error, and this entry executes that separation instead of asserting it.",
+    "repin": true,
+    "innerRunner": "verify",
+    "innerExpect": "[FAIL] Step 8",
+    "note": "Shorts one per-hand credit by a single settlement unit (0.2 -> 0.19999999), the smallest error on the grid; Step 8 must fail. R11 is the off-grid counterpart."
+  },
+  {
+    "name": "R36 — dataset: e0/n12 natural pays 0.25 -> 0.22 (3:2 downgraded to 6:5), then re-pin",
+    "file": "data/blackjack-6000hands.json",
+    "find": "\"winningAmount\": 0.25,",
+    "replace": "\"winningAmount\": 0.22,",
+    "edits": [
+      {
+        "file": "data/blackjack-6000hands.json",
+        "after": "\"id\": \"mpWMQllDG1ErqaG6SQR8T\",",
+        "find": "\"winningAmount\": 0.25,",
+        "replace": "\"winningAmount\": 0.22,"
+      }
+    ],
+    "runner": "mocha",
+    "spec": "tests/blackjack/artifactTests.ts",
+    "expect": "blackjack-6000hands.json hash ≠ the pinned DATASET_SHA256",
+    "guard": "OUTER: DATASET_SHA256 pin. INNER, after re-pinning: Step 8, and Step 9 with it. On a 0.10 stake a 6:5 natural returns 0.22 (stake + 1.2x), against the 0.25 that 3:2 requires — the single most common real-world blackjack downgrade. R10 is the even-money case.",
+    "repin": true,
+    "innerRunner": "verify",
+    "innerExpect": "[FAIL] Step 8",
+    "note": "Pays a natural 0.22 on a 0.10 stake (6:5) instead of 0.25 (3:2). Step 8 must fail, and Step 9 with it."
+  },
+  {
+    "name": "R37 — round engine: the natural pays [1, 2.5] -> [1, 2] (3:2 downgraded to even money in the ENGINE, not the dataset)",
+    "file": "src/round-engine.ts",
+    "find": "if (playerBJ) return [1, NATURAL_RETURN];",
+    "replace": "if (playerBJ) return [1, 2];",
+    "runner": "mocha",
+    "spec": "tests/blackjack/roundEngineTests.ts",
+    "expect": "has drifted from the audited strategy",
+    "guard": "tests/blackjack/roundEngineTests.ts — the 5σ binding of src/round-engine.ts to the exact 8-deck TD solve. Downgrading the natural removes ≈0.5 × 4.75% = 2.4 pp per initial bet, which is ~5.9× the 0.4065864 pp acceptance window, so the named assertion fails and prints the drift message.",
+    "note": "Changes the round engine's natural settlement to even money: the engine reads the natural payout from src/config.ts RULES (NATURAL_RETURN = 1 + 3/2), and the edit restates it as the literal 2. The Wizard of Odds anchor and the gate-width test do not execute the engine's payout path; this entry does, and roundEngineTests must fail with the drift message."
+  },
+  {
+    "name": "R38 — shared shuffler: cap the lazy Fisher-Yates frontier at 24, reinstating the fixed-prefix defect",
+    "file": "src/shuffle.ts",
+    "find": "while (f <= k) {",
+    "replace": "while (f <= k && f < 24) {",
+    "runner": "mocha",
+    "spec": "tests/blackjack/rngTests.ts",
+    "expect": "depth 40: chi2=",
+    "guard": "tests/blackjack/rngTests.ts — 'position 40 is uniform over the 13 ranks'. With the frontier capped, position 40 is never settled by a draw for that round, so the rank landing there is grossly non-uniform and the χ² blows past the 0.1% critical value of 32.91.",
+    "note": "Caps the lazy Fisher-Yates frontier at 24 in src/shuffle.ts, the one shuffle loop: src/simulate.ts imports it, rngTests.ts drives it, and rngTests.ts asserts in source that simulate.ts has not re-inlined a copy. The depth-40 uniformity test in rngTests must fail."
+  },
+  {
+    "name": "R39 — pre-capture anchor broken: meta.preCapture.nextHashedServerSeed no longer epoch 0's commitment, then re-pin",
+    "file": "data/blackjack-6000hands.json",
+    "find": "\"nextHashedServerSeed\": \"948eff896b5521c1064402dcd5557342210e03e0c4e864d0b83418bfb5e12f42\",",
+    "replace": "\"nextHashedServerSeed\": \"948eff896b5521c1064402dcd5557342210e03e0c4e864d0b83418bfb5e12f43\",",
+    "edits": [
+      {
+        "file": "data/blackjack-6000hands.json",
+        "after": "\"preCapture\": {",
+        "find": "\"nextHashedServerSeed\": \"948eff896b5521c1064402dcd5557342210e03e0c4e864d0b83418bfb5e12f42\",",
+        "replace": "\"nextHashedServerSeed\": \"948eff896b5521c1064402dcd5557342210e03e0c4e864d0b83418bfb5e12f43\","
+      }
+    ],
+    "runner": "verify",
+    "expect": "Dataset hash mismatch — refusing to run",
+    "guard": "OUTER: DATASET_SHA256 fail-fast in src/loader.ts. INNER, after re-pinning: Step 2 — the chain must be anchored before epoch 0: the pre-capture record's published next-seed hash has to equal epoch 0's commitment (BLACKJACK-02).",
+    "repin": true,
+    "innerRunner": "verify",
+    "innerExpect": "[FAIL] Step 2"
+  },
+  {
+    "name": "R40 — one round's client seed changed inside its epoch (e0/n0), then re-pin",
+    "file": "data/blackjack-6000hands.json",
+    "find": "\"clientSeed\": \"audita6d2fe11bb1f\",",
+    "replace": "\"clientSeed\": \"auditffffffffffff\",",
+    "edits": [
+      {
+        "file": "data/blackjack-6000hands.json",
+        "after": "\"id\": \"6hBu_VAq-lMp3UKjYMS1a\",",
+        "find": "\"clientSeed\": \"audita6d2fe11bb1f\",",
+        "replace": "\"clientSeed\": \"auditffffffffffff\","
+      }
+    ],
+    "runner": "verify",
+    "expect": "Dataset hash mismatch — refusing to run",
+    "guard": "OUTER: DATASET_SHA256 fail-fast in src/loader.ts. INNER, after re-pinning: Step 3 — every round of an epoch carries the one client seed on the epoch's seed record (BLACKJACK-03, same-client-seed half).",
+    "repin": true,
+    "innerRunner": "verify",
+    "innerExpect": "[FAIL] Step 3"
+  },
+  {
+    "name": "R41 — declared nonce base 0 -> 1 (src/config.ts NONCE_BASE)",
+    "file": "src/config.ts",
+    "find": "export const NONCE_BASE = 0;",
+    "replace": "export const NONCE_BASE = 1;",
+    "edits": [
+      {
+        "file": "src/config.ts",
+        "find": "export const NONCE_BASE = 0;",
+        "replace": "export const NONCE_BASE = 1;"
+      }
+    ],
+    "runner": "verify",
+    "expect": "[FAIL] Step 4",
+    "guard": "Step 4 — the window is DECLARED; a seed record whose nonceStart disagrees with the declaration FAILs (BLACKJACK-04)."
+  },
+  {
+    "name": "R42 — rejection ceiling off by one: maxFairFor returns a value that is no longer a multiple of the range",
+    "file": "src/rng.ts",
+    "find": "return Math.floor(TWO_POW_32 / range) * range;",
+    "replace": "return Math.floor(TWO_POW_32 / range) * range + 1;",
+    "edits": [
+      {
+        "file": "src/rng.ts",
+        "find": "return Math.floor(TWO_POW_32 / range) * range;",
+        "replace": "return Math.floor(TWO_POW_32 / range) * range + 1;"
+      }
+    ],
+    "runner": "verify",
+    "expect": "[FAIL] Step 6",
+    "guard": "Step 6 draw-bias arm — every range must have maxFair a whole multiple of the range, so the conditional bias is exactly 0 (BLACKJACK-08). The capture's shoes are unchanged by this edit (no captured draw lands on the ceiling), so only the bound can catch it."
+  },
+  {
+    "name": "R43 — rejection branch deleted: the first chunk is always used (plain chunk % range)",
+    "file": "src/rng.ts",
+    "find": "    if (v < limit) return v % range;\n    if (c === 0 && census) census.firstChunkRejected += 1;",
+    "replace": "    return v % range;",
+    "edits": [
+      {
+        "file": "src/rng.ts",
+        "find": "    if (v < limit) return v % range;\n    if (c === 0 && census) census.firstChunkRejected += 1;",
+        "replace": "    return v % range;"
+      }
+    ],
+    "runner": "verify",
+    "expect": "[FAIL] Step 6",
+    "guard": "Step 6 draw-bias arm — the rejection vector (Pass-1 seed pair, nonce 5,591,308, cursor 409, range 410) must draw 116; without the branch it draws 312. Every captured shoe is byte-identical under this edit (0 captured draws take the branch — MANIFEST DL-2), which is why the vector exists."
+  },
+  {
+    "name": "R44 — vendored site verifier bytes edited (derive.js comment), pin left alone",
+    "file": "verifier-parity/games/blackjack/derive.js",
+    "find": "LIQD.com Blackjack RNG",
+    "replace": "LIQD.com Blackjack  RNG",
+    "edits": [
+      {
+        "file": "verifier-parity/games/blackjack/derive.js",
+        "find": "LIQD.com Blackjack RNG",
+        "replace": "LIQD.com Blackjack  RNG"
+      }
+    ],
+    "runner": "verify",
+    "expect": "[FAIL] Step 6",
+    "guard": "Step 6 player-verifier arm — the vendored site files are hashed against src/config.ts SITE_VERIFIER_PINS on every run (BLACKJACK-24)."
+  },
+  {
+    "name": "R45 — site verifier behaviour changed (dealer draws on 17) AND re-pinned",
+    "file": "verifier-parity/games/blackjack/derive.js",
+    "find": "if (best >= 17) break; // hard or soft 17+ stands (S17)",
+    "replace": "if (best >= 18) break; // hard or soft 17+ stands (S17)",
+    "edits": [
+      {
+        "file": "verifier-parity/games/blackjack/derive.js",
+        "find": "if (best >= 17) break; // hard or soft 17+ stands (S17)",
+        "replace": "if (best >= 18) break; // hard or soft 17+ stands (S17)"
+      },
+      {
+        "file": "src/config.ts",
+        "find": "sha256: '38792bc400640ea4b95ec9f0afc88ae31a5cf4d46130febbeb8eb6f3ae8ac59b'",
+        "replace": "sha256: '9bf04275abdc355c8fe63eb95fbb36d066f4b8ba5d27d89cbae4ab508b3813b8'"
+      }
+    ],
+    "runner": "verify",
+    "expect": "[FAIL] Step 6",
+    "guard": "Step 6 player-verifier arm — with the pin matched, the EXECUTED site verifier must still reproduce the recorded hands on the declared sample; an H17 dealer disagrees on the sampled rounds where the dealer stood on soft 17 (BLACKJACK-24).",
+    "note": "Moves the vendored verifier's dealer stand threshold from 17 to 18 and re-pins the file in the second edit, so the pin passes and only the behavioural comparison in Step 6 can reject it."
+  },
+  {
+    "name": "R46 — the 'wrong' client seed is the right one: Step 7's controls collapse onto the real derivation",
+    "file": "tests/steps/parity.ts",
+    "find": "blackjackShoe(serverSeed, b.clientSeed + '_x', b.nonce)[0]",
+    "replace": "blackjackShoe(serverSeed, b.clientSeed + '', b.nonce)[0]",
+    "edits": [
+      {
+        "file": "tests/steps/parity.ts",
+        "find": "blackjackShoe(serverSeed, b.clientSeed + '_x', b.nonce)[0]",
+        "replace": "blackjackShoe(serverSeed, b.clientSeed + '', b.nonce)[0]"
+      }
+    ],
+    "runner": "verify",
+    "expect": "[FAIL] Step 7",
+    "guard": "Step 7 — survivors above E + 5σ of the 1/52 model (here 1,000 of 1,000) mean the client seed is not moving the deal: a hard FAIL, not a flag (BLACKJACK-06)."
+  },
+  {
+    "name": "R47 — relabelled result: e0/n0 winning hand's label won -> lost (the cards and credit untouched), then re-pin",
+    "file": "data/blackjack-6000hands.json",
+    "find": "\"result\": \"won\",",
+    "replace": "\"result\": \"lost\",",
+    "edits": [
+      {
+        "file": "data/blackjack-6000hands.json",
+        "after": "\"id\": \"6hBu_VAq-lMp3UKjYMS1a\",",
+        "find": "\"result\": \"won\",",
+        "replace": "\"result\": \"lost\","
+      }
+    ],
+    "runner": "verify",
+    "expect": "Dataset hash mismatch — refusing to run",
+    "guard": "OUTER: DATASET_SHA256 fail-fast in src/loader.ts. INNER, after re-pinning: Step 8 — the operator's per-hand label is reconciled against the settlement the cards imply, never consumed (BLACKJACK-13).",
+    "repin": true,
+    "innerRunner": "verify",
+    "innerExpect": "[FAIL] Step 8"
+  },
+  {
+    "name": "R48 — e0/n12 natural pays 0.25 -> 0.22 (3:2 downgraded to 6:5), then re-pin — scored by the isolated 3:2 step",
+    "file": "data/blackjack-6000hands.json",
+    "find": "\"winningAmount\": 0.25,",
+    "replace": "\"winningAmount\": 0.22,",
+    "edits": [
+      {
+        "file": "data/blackjack-6000hands.json",
+        "after": "\"id\": \"mpWMQllDG1ErqaG6SQR8T\",",
+        "find": "\"winningAmount\": 0.25,",
+        "replace": "\"winningAmount\": 0.22,"
+      }
+    ],
+    "runner": "verify",
+    "expect": "Dataset hash mismatch — refusing to run",
+    "guard": "OUTER: DATASET_SHA256 fail-fast in src/loader.ts. INNER, after re-pinning: Step 9 — every winning natural must satisfy 2×credit == 5×stake in integer units (BLACKJACK-13, naturals at 3:2 as an isolated check).",
+    "repin": true,
+    "innerRunner": "verify",
+    "innerExpect": "[FAIL] Step 9"
+  },
+  {
+    "name": "R49 — declared insurance stake relation 0.5 -> 1 (src/config.ts SIDE_STAKE_RATIO)",
+    "file": "src/config.ts",
+    "find": "insurance: 0.5 } as const;",
+    "replace": "insurance: 1 } as const;",
+    "edits": [
+      {
+        "file": "src/config.ts",
+        "find": "insurance: 0.5 } as const;",
+        "replace": "insurance: 1 } as const;"
+      }
+    ],
+    "runner": "verify",
+    "expect": "[FAIL] Step 10",
+    "guard": "Step 10 — every insurance stake must be the declared fraction of the main stake."
+  },
+  {
+    "name": "R50 — e0/n0 dealer draws a card on 20, then re-pin",
+    "file": "data/blackjack-6000hands.json",
+    "find": "\"dealerHand\": [\n        \"CLUB:10\",\n        \"HEART:11\"\n      ],",
+    "replace": "\"dealerHand\": [\n        \"CLUB:10\",\n        \"HEART:11\",\n        \"HEART:2\"\n      ],",
+    "edits": [
+      {
+        "file": "data/blackjack-6000hands.json",
+        "after": "\"id\": \"6hBu_VAq-lMp3UKjYMS1a\",",
+        "find": "\"dealerHand\": [\n        \"CLUB:10\",\n        \"HEART:11\"\n      ],",
+        "replace": "\"dealerHand\": [\n        \"CLUB:10\",\n        \"HEART:11\",\n        \"HEART:2\"\n      ],"
+      }
+    ],
+    "runner": "verify",
+    "expect": "Dataset hash mismatch — refusing to run",
+    "guard": "OUTER: DATASET_SHA256 fail-fast in src/loader.ts. INNER, after re-pinning: Step 11 — the dealer's draws are replayed against S17 in both directions; a card taken on 17+ is an over-draw (BLACKJACK-10).",
+    "repin": true,
+    "innerRunner": "verify",
+    "innerExpect": "[FAIL] Step 11"
+  },
+  {
+    "name": "R51 — a double-after-split round's `doubled` summary flipped true -> false, then re-pin",
+    "file": "data/blackjack-6000hands.json",
+    "find": "\"doubled\": true,",
+    "replace": "\"doubled\": false,",
+    "edits": [
+      {
+        "file": "data/blackjack-6000hands.json",
+        "after": "\"id\": \"8Kory8RWLJJjAwIhJ1LI5\",",
+        "find": "\"doubled\": true,",
+        "replace": "\"doubled\": false,"
+      }
+    ],
+    "runner": "verify",
+    "expect": "Dataset hash mismatch — refusing to run",
+    "guard": "OUTER: DATASET_SHA256 fail-fast in src/loader.ts. INNER, after re-pinning: Step 12 — DAS is read off the token stream and the operator's summary booleans must agree with it (BLACKJACK-15).",
+    "repin": true,
+    "innerRunner": "verify",
+    "innerExpect": "[FLAG] Step 12"
+  },
+  {
+    "name": "R52 — a player action logged on a round the dealer's natural ended at the peek, then re-pin",
+    "file": "data/blackjack-6000hands.json",
+    "find": "\"actions\": [],",
+    "replace": "\"actions\": [\"stand\"],",
+    "edits": [
+      {
+        "file": "data/blackjack-6000hands.json",
+        "after": "\"id\": \"xT1rdV762-9TgJiBGTKSn\",",
+        "find": "\"actions\": [],",
+        "replace": "\"actions\": [\"stand\"],"
+      }
+    ],
+    "runner": "verify",
+    "expect": "Dataset hash mismatch — refusing to run",
+    "guard": "OUTER: DATASET_SHA256 fail-fast in src/loader.ts. INNER, after re-pinning: Step 13 — every dealer natural must settle with no player play action (peek) (BLACKJACK-10).",
+    "repin": true,
+    "innerRunner": "verify",
+    "innerExpect": "[FLAG] Step 13"
+  },
+  {
+    "name": "R53 — a surrender token appended to e0/n0's actions, then re-pin",
+    "file": "data/blackjack-6000hands.json",
+    "find": "\"actions\": [\n        \"hit\"\n      ],",
+    "replace": "\"actions\": [\n        \"hit\",\n        \"surrender\"\n      ],",
+    "edits": [
+      {
+        "file": "data/blackjack-6000hands.json",
+        "after": "\"id\": \"6hBu_VAq-lMp3UKjYMS1a\",",
+        "find": "\"actions\": [\n        \"hit\"\n      ],",
+        "replace": "\"actions\": [\n        \"hit\",\n        \"surrender\"\n      ],"
+      }
+    ],
+    "runner": "verify",
+    "expect": "Dataset hash mismatch — refusing to run",
+    "guard": "OUTER: DATASET_SHA256 fail-fast in src/loader.ts. INNER, after re-pinning: Step 14 — surrender is ASSUMED unavailable; a surrender token in the capture contradicts the assumption (BLACKJACK-15, MANIFEST DL-5).",
+    "repin": true,
+    "innerRunner": "verify",
+    "innerExpect": "[FLAG] Step 14"
+  },
+  {
+    "name": "R54 — 21+3 FLUSH paytable 5 -> 6 (src/config.ts)",
+    "file": "src/config.ts",
+    "find": "  FLUSH: 5,",
+    "replace": "  FLUSH: 6,",
+    "edits": [
+      {
+        "file": "src/config.ts",
+        "find": "  FLUSH: 5,",
+        "replace": "  FLUSH: 6,"
+      }
+    ],
+    "runner": "verify",
+    "expect": "[FAIL] Step 16",
+    "guard": "Step 16 — every 21+3 settlement in the capture is recomputed from this paytable (345 flushes), so a wrong multiplier is contradicted by the live wins."
+  },
+  {
+    "name": "R55 — storefront edge figure 0.48% -> 0.58% (src/config.ts STOREFRONT_EDGE)",
+    "file": "src/config.ts",
+    "find": "export const STOREFRONT_EDGE = 0.0048;",
+    "replace": "export const STOREFRONT_EDGE = 0.0058;",
+    "edits": [
+      {
+        "file": "src/config.ts",
+        "find": "export const STOREFRONT_EDGE = 0.0048;",
+        "replace": "export const STOREFRONT_EDGE = 0.0058;"
+      }
+    ],
+    "runner": "verify",
+    "expect": "[FLAG] Step 20",
+    "guard": "Step 20 — an operator edge figure more than one display unit from the modelled edge is a FLAG with origin operator (BLACKJACK-19)."
+  },
+  {
+    "name": "R56 — a Phase E ($10) hand's first card changed, then re-pin",
+    "file": "data/blackjack-6000hands.json",
+    "find": "\"SPADE:7\",",
+    "replace": "\"SPADE:8\",",
+    "edits": [
+      {
+        "file": "data/blackjack-6000hands.json",
+        "after": "\"id\": \"FK4l4W-vBKSOJzGLwRSbs\",",
+        "find": "\"SPADE:7\",",
+        "replace": "\"SPADE:8\","
+      }
+    ],
+    "runner": "verify",
+    "expect": "Dataset hash mismatch — refusing to run",
+    "guard": "OUTER: DATASET_SHA256 fail-fast in src/loader.ts. INNER, after re-pinning: Step 22 — every elevated-stake hand recomputes card for card (BLACKJACK-12).",
+    "repin": true,
+    "innerRunner": "verify",
+    "innerExpect": "[FAIL] Step 22"
+  },
+  {
+    "name": "R57 — a 21+3 paytable category nobody ever hits (src/config.ts)",
+    "file": "src/config.ts",
+    "find": "  SUITED_THREE_OF_A_KIND: 100,",
+    "replace": "  SUITED_THREE_OF_A_KIND: 100,\n  MINI_ROYAL: 50,",
+    "edits": [
+      {
+        "file": "src/config.ts",
+        "find": "  SUITED_THREE_OF_A_KIND: 100,",
+        "replace": "  SUITED_THREE_OF_A_KIND: 100,\n  MINI_ROYAL: 50,"
+      }
+    ],
+    "runner": "verify",
+    "expect": "[FLAG] Step 23",
+    "guard": "Step 23 — every declared paytable category must be exercised by the capture (BLACKJACK-14)."
+  },
+  {
+    "name": "R58 — capture plan restated: PHASE_PLAN F 500 -> 450 hands (src/config.ts)",
+    "file": "src/config.ts",
+    "find": "  F: { hands: 500, stake: 0.1 },",
+    "replace": "  F: { hands: 450, stake: 0.1 },",
+    "edits": [
+      {
+        "file": "src/config.ts",
+        "find": "  F: { hands: 500, stake: 0.1 },",
+        "replace": "  F: { hands: 450, stake: 0.1 },"
+      }
+    ],
+    "runner": "verify",
+    "expect": "[FAIL] Step 24",
+    "guard": "Step 24 — per-phase counts are bound to the plan in code, and the plan total to EXPECTED_HANDS (BLACKJACK-05)."
+  },
+  {
+    "name": "R59 — a Phase D hand's first card changed, then re-pin",
+    "file": "data/blackjack-6000hands.json",
+    "find": "\"DIAMOND:4\",",
+    "replace": "\"DIAMOND:5\",",
+    "edits": [
+      {
+        "file": "data/blackjack-6000hands.json",
+        "after": "\"id\": \"eNhJwTzUTNe1UD9QoK73J\",",
+        "find": "\"DIAMOND:4\",",
+        "replace": "\"DIAMOND:5\","
+      }
+    ],
+    "runner": "verify",
+    "expect": "Dataset hash mismatch — refusing to run",
+    "guard": "OUTER: DATASET_SHA256 fail-fast in src/loader.ts. INNER, after re-pinning: Step 26 — every Phase D hand must recompute under the player-set client seed actually used (BLACKJACK-06).",
+    "repin": true,
+    "innerRunner": "verify",
+    "innerExpect": "[FLAG] Step 26"
+  },
+  {
+    "name": "R60 — coverage floor for splits 200 -> 1000 (src/config.ts COVERAGE_FLOORS)",
+    "file": "src/config.ts",
+    "find": "  splits: 200, aceSplits: 20,",
+    "replace": "  splits: 1000, aceSplits: 20,",
+    "edits": [
+      {
+        "file": "src/config.ts",
+        "find": "  splits: 200, aceSplits: 20,",
+        "replace": "  splits: 1000, aceSplits: 20,"
+      }
+    ],
+    "runner": "verify",
+    "expect": "[FLAG] Step 27",
+    "guard": "Step 27 — a coverage floor the capture does not reach is a FLAG with a limitation row, never a silent pass (BLACKJACK-15)."
+  },
+  {
+    "name": "R61 — an insurance round's dealer upcard changed from an Ace, then re-pin",
+    "file": "data/blackjack-6000hands.json",
+    "find": "\"dealerHand\": [\n        \"DIAMOND:1\",",
+    "replace": "\"dealerHand\": [\n        \"DIAMOND:2\",",
+    "edits": [
+      {
+        "file": "data/blackjack-6000hands.json",
+        "after": "\"id\": \"wdOVgTAFilxkgI55hPG4r\",",
+        "find": "\"dealerHand\": [\n        \"DIAMOND:1\",",
+        "replace": "\"dealerHand\": [\n        \"DIAMOND:2\","
+      }
+    ],
+    "runner": "verify",
+    "expect": "Dataset hash mismatch — refusing to run",
+    "guard": "OUTER: DATASET_SHA256 fail-fast in src/loader.ts. INNER, after re-pinning: Step 28 — insurance is offered only on a dealer Ace (BLACKJACK-15).",
+    "repin": true,
+    "innerRunner": "verify",
+    "innerExpect": "[FAIL] Step 28"
+  },
+  {
+    "name": "R62 — live-sample fit threshold raised to p >= 0.5 (the measured p is 0.3406)",
+    "file": "tests/steps/standardization.ts",
+    "find": "pFit >= 0.01 &&",
+    "replace": "pFit >= 0.5 &&",
+    "edits": [
+      {
+        "file": "tests/steps/standardization.ts",
+        "find": "pFit >= 0.01 &&",
+        "replace": "pFit >= 0.5 &&"
+      }
+    ],
+    "runner": "verify",
+    "expect": "[INFO] Step 30",
+    "guard": "Step 30 — the live first-card fit is scored, and a misfit reports INFO (BLACKJACK-22, policy INFORMATIONAL: not counted, verdict unchanged). This shows the INFO branch is reachable from the measured statistic; the run exits non-zero on the reproduction gate because the committed Step 30 record changes."
+  },
+  {
+    "name": "R63 — capture plan restated: Phase E stake $10 -> $5 (src/config.ts PHASE_PLAN)",
+    "file": "src/config.ts",
+    "find": "  E: { hands: 200, stake: 10 },",
+    "replace": "  E: { hands: 200, stake: 5 },",
+    "edits": [
+      {
+        "file": "src/config.ts",
+        "find": "  E: { hands: 200, stake: 10 },",
+        "replace": "  E: { hands: 200, stake: 5 },"
+      }
+    ],
+    "runner": "verify",
+    "expect": "[FAIL] Step 31",
+    "guard": "Step 31 — every round is staked at its own phase's planned stake, from the plan in code (BLACKJACK-05)."
+  },
+  {
+    "name": "R64 — the dataset's recorded Perfect Pairs paytable restated 25 -> 24, then re-pin",
+    "file": "data/blackjack-6000hands.json",
+    "find": "\"perfect\": 25,",
+    "replace": "\"perfect\": 24,",
+    "edits": [
+      {
+        "file": "data/blackjack-6000hands.json",
+        "after": "\"payout\": {",
+        "find": "\"perfect\": 25,",
+        "replace": "\"perfect\": 24,"
+      }
+    ],
+    "runner": "verify",
+    "expect": "Dataset hash mismatch — refusing to run",
+    "guard": "OUTER: DATASET_SHA256 fail-fast in src/loader.ts. INNER, after re-pinning: Step 25 — the dataset's own config block is scored against the single-sourced paytables (BLACKJACK-26).",
+    "repin": true,
+    "innerRunner": "verify",
+    "innerExpect": "[FAIL] Step 25"
+  },
+  {
+    "name": "R65 — pinned simulation master seed changed by one nibble (src/config.ts SIM_MASTER_SEED)",
+    "file": "src/config.ts",
+    "find": "export const SIM_MASTER_SEED = '1565e5dec973a1df4a09967b69a12e0a21ab8d4cdfe8d8fc26ae08c1512501af';",
+    "replace": "export const SIM_MASTER_SEED = '1565e5dec973a1df4a09967b69a12e0a21ab8d4cdfe8d8fc26ae08c1512501ae';",
+    "edits": [
+      {
+        "file": "src/config.ts",
+        "find": "export const SIM_MASTER_SEED = '1565e5dec973a1df4a09967b69a12e0a21ab8d4cdfe8d8fc26ae08c1512501af';",
+        "replace": "export const SIM_MASTER_SEED = '1565e5dec973a1df4a09967b69a12e0a21ab8d4cdfe8d8fc26ae08c1512501ae';"
+      }
+    ],
+    "runner": "verify",
+    "expect": "[FAIL] Step 17",
+    "guard": "Steps 17–19 — the artifact's masterSeed must be the pinned one; the committed experiment is the one the code declares (BLACKJACK-20)."
+  },
+  {
+    "name": "R66 — declared Perfect Pairs stake relation 1 -> 2 (src/config.ts SIDE_STAKE_RATIO)",
+    "file": "src/config.ts",
+    "find": "export const SIDE_STAKE_RATIO = { perfectPair: 1,",
+    "replace": "export const SIDE_STAKE_RATIO = { perfectPair: 2,",
+    "edits": [
+      {
+        "file": "src/config.ts",
+        "find": "export const SIDE_STAKE_RATIO = { perfectPair: 1,",
+        "replace": "export const SIDE_STAKE_RATIO = { perfectPair: 2,"
+      }
+    ],
+    "runner": "verify",
+    "expect": "[FAIL] Step 15",
+    "guard": "Step 15 — every side stake must equal its declared relation to the main stake (BLACKJACK-14)."
+  },
+  {
+    "name": "R67 — a Pass-1 census row forged: rows[0].returned 11143.5 -> 11243.5, then re-pin",
+    "file": "outputs/simulation-results.json",
+    "find": "\"returned\": 11143.5,",
+    "replace": "\"returned\": 11243.5,",
+    "edits": [
+      {
+        "file": "outputs/simulation-results.json",
+        "after": "\"rows\": [",
+        "find": "\"returned\": 11143.5,",
+        "replace": "\"returned\": 11243.5,"
+      }
+    ],
+    "runner": "mocha",
+    "spec": "tests/blackjack/artifactTests.ts",
+    "expect": "simulation-results.json hash ≠ the pinned SIMULATION_SHA256",
+    "guard": "OUTER: SIMULATION_SHA256 pin. INNER, after re-pinning: Step 18 — the Pass-1 statistics are re-derived from the census rows and must agree with the scalars the artifact states, and rows 0 and 99 are re-dealt from the recorded seed pair and must equal the artifact rows exactly (BLACKJACK-20).",
+    "repin": true,
+    "innerRunner": "verify",
+    "innerExpect": "[FAIL] Step 18"
+  },
+  {
+    "name": "R68 — a Pass-1 derived statistic forged: serialRunsPValue 0.6387 -> 0.9, then re-pin",
+    "file": "outputs/simulation-results.json",
+    "find": "\"serialRunsPValue\": 0.6387316225088242,",
+    "replace": "\"serialRunsPValue\": 0.9,",
+    "edits": [
+      {
+        "file": "outputs/simulation-results.json",
+        "find": "\"serialRunsPValue\": 0.6387316225088242,",
+        "replace": "\"serialRunsPValue\": 0.9,"
+      }
+    ],
+    "runner": "mocha",
+    "spec": "tests/blackjack/artifactTests.ts",
+    "expect": "simulation-results.json hash ≠ the pinned SIMULATION_SHA256",
+    "guard": "OUTER: SIMULATION_SHA256 pin. INNER, after re-pinning: Step 18 — every derived statistic is re-derived from the census rows (runs test from Σ row runs and the range joins) and must agree within the reproduction tolerance (BLACKJACK-20).",
+    "repin": true,
+    "innerRunner": "verify",
+    "innerExpect": "[FAIL] Step 18"
+  },
+  {
+    "name": "R69 — a Pass-2 money verdict forged: results[0].moneyP 0.78 -> 0.005 (a flagged seed hidden or invented), then re-pin",
+    "file": "outputs/simulation-results.json",
+    "find": "\"moneyP\": 0.78,",
+    "replace": "\"moneyP\": 0.005,",
+    "edits": [
+      {
+        "file": "outputs/simulation-results.json",
+        "after": "\"results\": [",
+        "find": "\"moneyP\": 0.78,",
+        "replace": "\"moneyP\": 0.005,"
+      }
+    ],
+    "runner": "mocha",
+    "spec": "tests/blackjack/artifactTests.ts",
+    "expect": "simulation-results.json hash ≠ the pinned SIMULATION_SHA256",
+    "guard": "OUTER: SIMULATION_SHA256 pin. INNER, after re-pinning: Step 19 — each seed's money p-value is re-derived from its own 200 window nets and must equal the artifact's (BLACKJACK-21).",
+    "repin": true,
+    "innerRunner": "verify",
+    "innerExpect": "[FAIL] Step 19"
+  },
+  {
+    "name": "R70 — the money rule's family gate widened in the artifact: money.familyGate 6 -> 60, then re-pin",
+    "file": "outputs/simulation-results.json",
+    "find": "\"familyGate\": 6,",
+    "replace": "\"familyGate\": 60,",
+    "edits": [
+      {
+        "file": "outputs/simulation-results.json",
+        "find": "\"familyGate\": 6,",
+        "replace": "\"familyGate\": 60,"
+      }
+    ],
+    "runner": "mocha",
+    "spec": "tests/blackjack/artifactTests.ts",
+    "expect": "simulation-results.json hash ≠ the pinned SIMULATION_SHA256",
+    "guard": "OUTER: SIMULATION_SHA256 pin. INNER, after re-pinning: Step 19 — the gate is recomputed from src/config.ts (binomial upper tail at PASS2_FAMILY_ALPHA) and the artifact must equal it; the artifact does not get to choose its own threshold (BLACKJACK-21).",
+    "repin": true,
+    "innerRunner": "verify",
+    "innerExpect": "[FAIL] Step 19"
+  },
+  {
+    "name": "R71 — the oracle's copy of the rule set drifts: anchor/rules.json s17 true -> false",
+    "file": "anchor/rules.json",
+    "find": "\"s17\": true,",
+    "replace": "\"s17\": false,",
+    "edits": [
+      {
+        "file": "anchor/rules.json",
+        "find": "\"s17\": true,",
+        "replace": "\"s17\": false,"
+      }
+    ],
+    "runner": "verify",
+    "expect": "[FAIL] Step 25",
+    "guard": "Step 25 — anchor/rules.json (read by anchor/oracle.py) must equal src/config.ts RULES field for field: one rule set, every consumer (BLACKJACK-26)."
+  },
+  {
+    "name": "R72 — the exact solver restates a rule instead of reading it: LIQD_RULES das RULES.das -> false",
+    "file": "src/exact-play.ts",
+    "find": "das: RULES.das,",
+    "replace": "das: false,",
+    "edits": [
+      {
+        "file": "src/exact-play.ts",
+        "find": "das: RULES.das,",
+        "replace": "das: false,"
+      }
+    ],
+    "runner": "verify",
+    "expect": "[FAIL] Step 25",
+    "guard": "Step 25 — the exact solver's LIQD_RULES must equal src/config.ts RULES; a second rule set in a consumer is visible as a disagreement (BLACKJACK-26)."
+  },
+  {
+    "name": "R73 — an impossible value in a pinned artifact: pass1 firstCardPValue 0.8752 -> 1.8752, then re-pin",
+    "file": "outputs/simulation-results.json",
+    "find": "\"firstCardPValue\": 0.8751781565082382,",
+    "replace": "\"firstCardPValue\": 1.8751781565082382,",
+    "edits": [
+      {
+        "file": "outputs/simulation-results.json",
+        "find": "\"firstCardPValue\": 0.8751781565082382,",
+        "replace": "\"firstCardPValue\": 1.8751781565082382,"
+      }
+    ],
+    "runner": "mocha",
+    "spec": "tests/blackjack/artifactTests.ts",
+    "expect": "simulation-results.json hash ≠ the pinned SIMULATION_SHA256",
+    "guard": "OUTER: SIMULATION_SHA256 pin. INNER, after re-pinning: Step 25 — every numeric leaf has a declared value domain (src/domains.ts) and a p-value above 1 is outside it, whatever the pin says (BLACKJACK-27).",
+    "repin": true,
+    "innerRunner": "verify",
+    "innerExpect": "is not a probability in [0,1]"
+  },
+  {
+    "name": "R74 — run metadata added to a pinned replay report: deep-replay-report.json gains \"seconds\", then re-pin",
+    "file": "outputs/deep-replay-report.json",
+    "find": "\"mismatches\": 0,",
+    "replace": "\"mismatches\": 0,\n  \"seconds\": 197.8,",
+    "edits": [
+      {
+        "file": "outputs/deep-replay-report.json",
+        "find": "\"mismatches\": 0,",
+        "replace": "\"mismatches\": 0,\n  \"seconds\": 197.8,"
+      }
+    ],
+    "runner": "verify",
+    "expect": "outputs/deep-replay-report.json hash mismatch",
+    "guard": "OUTER: DEEP_REPLAY_SHA256 pin (Step 25). INNER, after re-pinning: Step 25 — no artifact of record may carry a run-metadata key (BLACKJACK-27).",
+    "repin": true,
+    "innerRunner": "verify",
+    "innerExpect": "carries run metadata"
+  },
+  {
+    "name": "R75 — the Pass-2 per-round SD in the artifact put back to the measured-and-rounded 1.15 (money.sdPerRound 1.146686160256228 -> 1.15), then re-pin",
+    "file": "outputs/simulation-results.json",
+    "find": "\"sdPerRound\": 1.146686160256228,",
+    "replace": "\"sdPerRound\": 1.15,",
+    "edits": [
+      {
+        "file": "outputs/simulation-results.json",
+        "find": "\"sdPerRound\": 1.146686160256228,",
+        "replace": "\"sdPerRound\": 1.15,"
+      }
+    ],
+    "runner": "mocha",
+    "spec": "tests/blackjack/artifactTests.ts",
+    "expect": "simulation-results.json hash ≠ the pinned SIMULATION_SHA256",
+    "guard": "OUTER: SIMULATION_SHA256 pin. INNER, after re-pinning: Step 19 — the pooled money test's σ is the EXACT per-round SD recomputed in-step (src/exact-play.ts moments()); the artifact's sdPerRound must equal it exactly (BLACKJACK-21).",
+    "repin": true,
+    "innerRunner": "verify",
+    "innerExpect": "money.sdPerRound=1.15 (code 1.146686160256228)"
+  },
+  {
+    "name": "R76 — the exact per-round SD edited in the artifact of record (exact-rtp.json finite8TDMoments.sd 1.146686160256228 -> 1.15), then re-pin",
+    "file": "outputs/exact-rtp.json",
+    "find": "\"sd\": 1.146686160256228,",
+    "replace": "\"sd\": 1.15,",
+    "edits": [
+      {
+        "file": "outputs/exact-rtp.json",
+        "find": "\"sd\": 1.146686160256228,",
+        "replace": "\"sd\": 1.15,"
+      }
+    ],
+    "runner": "verify",
+    "expect": "Exact-RTP artifact hash mismatch",
+    "guard": "OUTER: EXACT_RTP_SHA256 pin (Step 25). INNER, after re-pinning: Step 19 — the in-step exact moments must equal outputs/exact-rtp.json finite8TDMoments field for field (BLACKJACK-21).",
+    "repin": true,
+    "innerRunner": "verify",
+    "innerExpect": "EXACT MOMENTS FAIL: outputs/exact-rtp.json finite8TDMoments.sd=1.15"
+  },
+  {
+    "name": "R77 — the split cross term dropped from the second moment: hand 2 dealt from the shoe BEFORE hand 1 drew (independent split hands) in src/exact-play.ts splitMoments",
+    "file": "src/exact-play.ts",
+    "find": "      const cc = e.counts;",
+    "replace": "      const cc = Int32Array.from(c);",
+    "edits": [
+      {
+        "file": "src/exact-play.ts",
+        "find": "      const cc = e.counts;",
+        "replace": "      const cc = Int32Array.from(c);"
+      }
+    ],
+    "runner": "mocha",
+    "spec": "tests/blackjack/exactOracleTests.ts",
+    "expect": "E[R²] expected",
+    "guard": "tests/blackjack/exactOracleTests.ts — E[R²] must reproduce anchor/oracle.py's exact fractions (both split hands and the dealer played physically in sequence) at 1e-12 on three reduced shoes. ALSO Step 19: the in-step moments no longer equal outputs/exact-rtp.json.",
+    "alsoRunner": "verify",
+    "alsoExpect": "EXACT MOMENTS FAIL"
+  },
+  {
+    "name": "R78 — the capture rig's client-seed generator swapped to Math.random (rig line 140: crypto.getRandomValues -> Math.random bytes), then re-pin",
+    "file": "capture/capture-liqd-blackjack.aug05-rig.mjs",
+    "find": "const randHex = (n) => Buffer.from(crypto.getRandomValues(new Uint8Array(n))).toString('hex');",
+    "replace": "const randHex = (n) => Buffer.from(Uint8Array.from({ length: n }, () => Math.floor(Math.random() * 256))).toString('hex');",
+    "edits": [
+      {
+        "file": "capture/capture-liqd-blackjack.aug05-rig.mjs",
+        "find": "const randHex = (n) => Buffer.from(crypto.getRandomValues(new Uint8Array(n))).toString('hex');",
+        "replace": "const randHex = (n) => Buffer.from(Uint8Array.from({ length: n }, () => Math.floor(Math.random() * 256))).toString('hex');"
+      }
+    ],
+    "runner": "verify",
+    "expect": "≠ the pin",
+    "guard": "OUTER: CAPTURE_RIG_SHA256 pin (Step 7). INNER, after re-pinning: Step 7 — the rig's randHex must be the crypto.getRandomValues line and Math.random may appear only in the demo renderer (BLACKJACK-06).",
+    "repin": true,
+    "innerRunner": "verify",
+    "innerExpect": "GENERATOR FAIL: randHex via crypto.getRandomValues: 0 line(s), expected 1"
+  },
+  {
+    "name": "R79 — the capture rig's phase plan shifted (66 Phase A epochs -> 65), then re-pin",
+    "file": "capture/capture-liqd-blackjack.aug05-rig.mjs",
+    "find": "for (let e = 0; e < 66; e++) ep('A', 'audit'",
+    "replace": "for (let e = 0; e < 65; e++) ep('A', 'audit'",
+    "edits": [
+      {
+        "file": "capture/capture-liqd-blackjack.aug05-rig.mjs",
+        "find": "for (let e = 0; e < 66; e++) ep('A', 'audit'",
+        "replace": "for (let e = 0; e < 65; e++) ep('A', 'audit'"
+      }
+    ],
+    "runner": "verify",
+    "expect": "≠ the pin",
+    "guard": "OUTER: CAPTURE_RIG_SHA256 pin (Step 7). INNER, after re-pinning: Step 7 — the rig's phase plan must reproduce the dataset's phase and seed tag on all 120 epochs (BLACKJACK-06).",
+    "repin": true,
+    "innerRunner": "verify",
+    "innerExpect": "GENERATOR FAIL: rig plan 119 epochs"
+  },
+  {
+    "name": "R80 — the 301 losing insurance records deleted from the dataset (insurance -> null), then re-pin",
+    "file": "data/blackjack-6000hands.json",
+    "edits": [
+      {
+        "file": "data/blackjack-6000hands.json",
+        "pattern": "\"insurance\": \\{[^{}]*?\"result\": \"lost\"[^{}]*?\\}",
+        "replace": "\"insurance\": null",
+        "count": 301
+      }
+    ],
+    "runner": "verify",
+    "expect": "Dataset hash mismatch — refusing to run",
+    "guard": "OUTER: DATASET_SHA256 fail-fast in src/loader.ts. INNER, after re-pinning: Step 28 — every round carrying the capture's insurance request (no-ins) must carry an insurance record and every record a no-ins token; 301 no-ins rounds without a record is a COVERAGE FAIL (MANIFEST DL-17).",
+    "note": "Each losing record carried winningAmount 0, so deleting it changes no round's credited total. The pattern matches exactly the 301 records whose result is \"lost\" (declared count 301); Step 28's coverage rule must fail.",
+    "repin": true,
+    "innerRunner": "verify",
+    "innerExpect": "[FAIL] Step 28"
+  },
+  {
+    "name": "C3(i) — the one setting's RTP lowered 0.3 pp where the RTP table reads it, table + record regenerated",
+    "file": "src/rtp-settings.ts",
+    "find": "const r = rationalFromDouble(x.rtpPerInitialBet);",
+    "replace": "const r = rationalFromDouble(x.rtpPerInitialBet - 0.003); // MUTATION",
+    "runner": "verify",
+    "regen": true,
+    "expectExit": 5,
+    "expectVerdict": "RTP FIGURE OVERSTATED",
+    "expect": "[RTP FIGURE OVERSTATED] Step 20",
+    "guard": "Step 20 (BLACKJACK-19), FIXPASS2 C3(i): the single setting (main game, 8-deck basic strategy) misses the published figure by more than the band and nothing else changes. Its RTP is lowered by 0.3 pp at the one place the RTP table reads it (outputs/exact-rtp.json finite8TD.rtpPerInitialBet, read in src/rtp-settings.ts): 99.212325 % against the 99.52 % held, 0.31 pp below. A real paytable change (3:2 to 6:5, a side-bet cell) would also change what captured hands were paid and is caught by the payout steps; this entry isolates the verdict route. With the table re-written and re-pinned and the record re-emitted (regen), the run must end RTP FIGURE OVERSTATED, exit 5, Step 20 re-scored OVERSTATED."
+  },
+  {
+    "name": "C3(ii) — published storefront figure raised to RTP 99.75 % (STOREFRONT_EDGE 0.48 % -> 0.25 %), table + record regenerated",
+    "file": "src/config.ts",
+    "find": "export const STOREFRONT_EDGE = 0.0048;",
+    "replace": "export const STOREFRONT_EDGE = 0.0025; // MUTATION",
+    "runner": "verify",
+    "regen": true,
+    "expectExit": 5,
+    "expectVerdict": "RTP FIGURE OVERSTATED",
+    "expect": "[RTP FIGURE OVERSTATED] Step 20",
+    "guard": "Step 20 (BLACKJACK-19), FIXPASS2 C3(ii): the published figure raised at its source, src/config.ts STOREFRONT_EDGE (the storefront \"Edge: 0.48%\", E16), which Step 20 reconciles and from which src/rtp-settings.ts now derives the claim (the higher RTP of STOREFRONT_EDGE and NOMINAL_HOUSE_EDGE). Measured before that change (14 Oct, probe with the table and record regenerated): Step 20 FLAGged on the storefront gap while the rule still held the literal 99.52 % and passed, so the run ended PROVABLY FAIR — Conditional Pass, exit 2. Now Step 20 prints its own [FLAG] and is then re-scored by the rule: 99.512325 % against 99.75 % is 0.24 pp below, RTP FIGURE OVERSTATED, exit 5."
+  }
+]

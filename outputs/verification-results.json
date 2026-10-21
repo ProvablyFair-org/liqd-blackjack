@@ -1,0 +1,628 @@
+{
+  "audit": "LIQD Blackjack",
+  "auditId": "PF-2026-LQ01",
+  "datasetSha256": "c2a28c5164a546105963ffb4ff8e7c422a68802df47afcdcfa0b4fdbad1fdbf7",
+  "artifactHashes": {
+    "dataset": "c2a28c5164a546105963ffb4ff8e7c422a68802df47afcdcfa0b4fdbad1fdbf7",
+    "simulation": "26ab1574ced2a1e59ca653a582951dac304ca62ea621e96b2b6de1e08a193567",
+    "simulationPinned": "26ab1574ced2a1e59ca653a582951dac304ca62ea621e96b2b6de1e08a193567",
+    "simulationHtml": "45ce9d7ad631d600adfb526b68646c5c90434806f449aada193640bf90d8d4bb",
+    "simulationHtmlPinned": "45ce9d7ad631d600adfb526b68646c5c90434806f449aada193640bf90d8d4bb",
+    "exactRtp": "f89b1920086bf0af17dbf5f30350bfef259a6fa0f934631a7ffa41e34cec4611",
+    "exactRtpPinned": "f89b1920086bf0af17dbf5f30350bfef259a6fa0f934631a7ffa41e34cec4611",
+    "cherryPickAttack": "44d45d84a8cd7d54dee3fca146be7e146f4e1fa65385cd34d33fa611ee9d1e78",
+    "cherryPickAttackPinned": "44d45d84a8cd7d54dee3fca146be7e146f4e1fa65385cd34d33fa611ee9d1e78",
+    "rngBranchCoverage": "eb2c74a1ecf84d3dbf3c1cc3a490b9c04ad1a24d201c4f58efc4403bbacb4593",
+    "rngBranchCoveragePinned": "eb2c74a1ecf84d3dbf3c1cc3a490b9c04ad1a24d201c4f58efc4403bbacb4593"
+  },
+  "summary": {
+    "passed": 31,
+    "flags": 0,
+    "operatorFlags": 0,
+    "captureFlags": 0,
+    "hardFail": 0,
+    "verdict": "PROVABLY FAIR — Full Pass"
+  },
+  "steps": [
+    {
+      "step": 1,
+      "name": "Commitment Reveal",
+      "status": "PASS",
+      "detail": "120/120 epochs have a revealed server seed that hashes to its commitment (SHA-256 utf8); 0 mismatches",
+      "profileIds": [
+        "BLACKJACK-01"
+      ],
+      "profileChecks": [
+        {
+          "id": "BLACKJACK-01",
+          "coverage": "full",
+          "note": "per-seed SHA-256(utf8(serverSeed hex string)) == hashedServerSeed, 120/120, the one declared encoding (src/rng.ts commitHash); the denominator is EXPECTED_SEEDS in src/config.ts and seeds.length must equal it, so a capture shipping fewer seed records FAILs"
+        }
+      ]
+    },
+    {
+      "step": 2,
+      "name": "Pre-Commitment Chain",
+      "status": "PASS",
+      "detail": "119/119 next-seed links verified (expected 119 = EXPECTED_SEEDS−1); 0 broken; pre-capture anchor (meta.preCapture): revealed pre-capture seed hashes to its commitment OK, its published next-seed hash equals epoch 0's commitment OK — 120 links in all, recomputed from the raw hash fields (the capture's commitVerified / chainLinkOk booleans are not read)",
+      "profileIds": [
+        "BLACKJACK-02"
+      ],
+      "profileChecks": [
+        {
+          "id": "BLACKJACK-02",
+          "coverage": "full",
+          "note": "119/119 next-seed links recomputed from the raw hash fields (seeds[i].nextHashedServerSeed == seeds[i+1].hashedServerSeed, count bound to EXPECTED_SEEDS−1) PLUS the pre-capture anchor: meta.preCapture.revealedServerSeed hashes to its commitment and its nextHashedServerSeed equals epoch 0's commitment; an absent anchor FAILs. The capture's commitVerified / chainLinkOk booleans are deleted on load and never read. No resume seam exists in this capture"
+        }
+      ]
+    },
+    {
+      "step": 3,
+      "name": "Within-Epoch Hash Consistency",
+      "status": "PASS",
+      "detail": "120/120 epochs carry bets; every bet's epoch label maps to the seed record whose commitment it carries; 0 epoch(s) with a mismatch; every round of an epoch carries ONE client seed, the one on the epoch's seed record: 120/120 epochs, 0 with more than one or a different one. Scope: the per-round hashedServerSeed and clientSeed are the capture script's stamps (the commitment it tracked for the epoch, and the epoch's client seed written onto each round after the reveal), not values LIQD returned per round, so this step checks that bookkeeping against the seed records",
+      "profileIds": [
+        "BLACKJACK-03"
+      ],
+      "profileChecks": [
+        {
+          "id": "BLACKJACK-03",
+          "coverage": "full",
+          "note": "both halves: bets grouped by their epoch label carry the ONE hash on that epoch's seed record (120/120), and every round of an epoch carries ONE client seed, the one on the seed record (120/120); epoch count bound to EXPECTED_SEEDS"
+        }
+      ]
+    },
+    {
+      "step": 4,
+      "name": "Nonce Continuity",
+      "status": "PASS",
+      "detail": "declared window NONCE_BASE…NONCE_BASE+EXPECTED_EPOCH_SIZE−1 = 0…49 (src/config.ts) on every epoch; 0 missing nonce(s) against 0 declared capture-retry gap(s), 0 repeat(s), 0 epoch(s) out of capture order, 0 nonce(s) outside the window; nonce window closed against the seed record: 120/120 epochs have nonceStart == 0, nonceEnd == 49 and a round present AT nonceEnd (0 wrong window, 0 truncated tail). Limit: the window is what the capture requested and recorded, not an operator-side counter; 145 of the nonces (the rounds recorded from the partial insurance response, which carry no serverSeedId) are the capture's own count (epoch start + hand index), because that response omits the nonce",
+      "profileIds": [
+        "BLACKJACK-04"
+      ],
+      "profileChecks": [
+        {
+          "id": "BLACKJACK-04",
+          "coverage": "full",
+          "note": "the window is DECLARED (src/config.ts NONCE_BASE 0, EXPECTED_EPOCH_SIZE 50 → 0…49); each seed record's nonceStart/nonceEnd is checked AGAINST it and a round must be present at nonceEnd; repeats, reorders and out-of-window nonces FAIL; missing nonces are counted against EXPECTED_CAPTURE_RETRY_GAPS (declared 0): an undeclared gap FAILs and no would-be card is derived for it, a gap count equal to a non-zero declaration is a capture-origin FLAG (verdict-neutral, printed as a disclosed limitation). Measured 0 missing, 0 repeats, 120/120 windows closed. The operator-side gap is scored stricter than the profile (FAIL, not FLAG)"
+        }
+      ]
+    },
+    {
+      "step": 5,
+      "name": "Epoch Size",
+      "status": "PASS",
+      "detail": "120/120 epochs; min=50 max=50; 0 not exactly 50; 6000/6000 rounds total. Expected counts come from src/config.ts (EXPECTED_SEEDS/EXPECTED_EPOCH_SIZE/EXPECTED_HANDS), not from the dataset header; the dataset's own header agrees (meta.epochSize, meta.plannedTotal, meta.progress.bets, meta.progress.seeds)",
+      "profileIds": [
+        "BLACKJACK-05"
+      ],
+      "profileChecks": [
+        {
+          "id": "BLACKJACK-05",
+          "coverage": "full",
+          "note": "the seeds / epoch-size / hands half: 120 epochs × 50 = 6,000 against EXPECTED_SEEDS, EXPECTED_EPOCH_SIZE, EXPECTED_HANDS in src/config.ts, and the dataset header (meta.epochSize, meta.plannedTotal, meta.progress.*) scored against them. Per-phase counts are Step 24, stakes Step 31 — both from src/config.ts PHASE_PLAN"
+        }
+      ]
+    },
+    {
+      "step": 6,
+      "name": "Recomputation Parity",
+      "status": "PASS",
+      "detail": "6000/6000 hands recomputed from revealed seeds in exact draw order (5599 single-hand, 401 split) — 0 mismatches; action/card cross-check: 6000/6000 hands have hit+double tokens matching drawn cards, 0 inconsistent; action grammar (no token after a hand's last terminal, no `double` after a `hit`, `no-ins`/`split` only at the head, a hand ends without standing only on bust/21/split-ace/dealer natural, no `stand` on a busted hand — nor on a single hand that reached 21 — and `bet.doubled` agrees with the `double` tokens): 6000/6000 rounds consistent, 0 inconsistent. Draw bias bound (declared design: rejection sampling, src/rng.ts maxFairFor): maxFair per range [range:maxFair] 416:4294967040 415:4294966970 414:4294967238 413:4294967068 412:4294966924 411:4294967262 410:4294966890 409:4294967078 408:4294967040 407:4294967215 406:4294967222 405:4294967085 404:4294967228 403:4294967261 402:4294967196 401:4294967041 400:4294967200 399:4294967271 398:4294967250 397:4294967129 396:4294967292 395:4294966930 394:4294967208 393:4294966917 392:4294967208 391:4294967261 390:4294967040 389:4294967283 388:4294967164 387:4294967022 386:4294967188 385:4294967215 384:4294967040 383:4294966979 382:4294966958 381:4294967280 380:4294967100 379:4294967093 378:4294967166 377:4294967222 376:4294967160 375:4294967250 374:4294967006 373:4294967061 372:4294967292 371:4294967201 370:4294967030 369:4294967013 368:4294967008 367:4294967236 366:4294967178 365:4294967045 364:4294967040 363:4294966995 362:4294967100 361:4294967176 360:4294967040 359:4294967223 358:4294967170 357:4294967040 356:4294966984 355:4294967145 354:4294966950 353:4294967238 352:4294967072 351:4294967274 350:4294967250 349:4294967104 348:4294967280 347:4294967169 346:4294967200 345:4294967100 344:4294967280 343:4294967110 342:4294966986 341:4294967292 340:4294967040 339:4294967280 338:4294967014 337:4294967270 336:4294967040 335:4294966995 334:4294967122 333:4294967067 332:4294967136 331:4294967292 330:4294967160 329:4294967019 328:4294967136 327:4294967112 326:4294967196 325:4294966975 324:4294967004 323:4294967176 322:4294967054 321:4294967160 320:4294967040 319:4294967193 318:4294967148 317:4294967064 316:4294967088 315:4294967040 314:4294967046 313:4294967220 312:4294967040 311:4294967224 310:4294967230 309:4294967130 308:4294967292 307:4294967147 306:4294967040 305:4294966995 304:4294967024 303:4294967127 302:4294967292 301:4294967194 300:4294967100 299:4294967261 298:4294967018 297:4294967193 296:4294967104 295:4294967245 294:4294967208 293:4294967163 292:4294967264 291:4294967067 290:4294967280 289:4294967142 288:4294967040 287:4294967054 286:4294967248 285:4294967100 284:4294967216 283:4294967046 282:4294967160 281:4294967261 280:4294967040 279:4294967292 278:4294967116 277:4294967269 276:4294967100 275:4294967050 274:4294967262 273:4294967040 272:4294967040 271:4294967077 270:4294967220 269:4294967249 268:4294967196 267:4294967073 266:4294967138 265:4294967095 264:4294967160 263:4294967262 262:4294967048 261:4294967193 260:4294967040 259:4294967215 258:4294967280 257:4294967295 256:4294967296 255:4294967295 254:4294967280 253:4294967215 252:4294967292 251:4294967173 250:4294967250 249:4294967136 248:4294967168 247:4294967157 246:4294967136 245:4294967110 244:4294967056 243:4294967166 242:4294967116 241:4294967281 240:4294967280 239:4294967186 238:4294967278 237:4294967088 236:4294967068 235:4294967160 234:4294967274 233:4294967288 232:4294967280 231:4294967292 230:4294967100 229:4294967135 228:4294967100 227:4294967120 226:4294967280 225:4294967175 224:4294967264 223:4294967289 222:4294967178 221:4294967261 220:4294967160 219:4294967118 218:4294967112 217:4294967292 216:4294967112 215:4294967280 214:4294967160 213:4294967145 212:4294967148 211:4294967245 210:4294967250 209:4294967138 208:4294967248 207:4294967238 206:4294967130 205:4294967095 204:4294967244 203:4294967222 202:4294967228 201:4294967196 200:4294967200 199:4294967250 198:4294967292 197:4294967208 196:4294967208 195:4294967235 194:4294967164 193:4294967188 192:4294967232 191:4294967149 190:4294967290 189:4294967166 188:4294967160 187:4294967193 186:4294967292 185:4294967215 184:4294967192 183:4294967178 182:4294967222 181:4294967281 180:4294967220 179:4294967170 178:4294967162 177:4294967127 176:4294967248 175:4294967250 174:4294967280 173:4294967200 172:4294967280 171:4294967157 170:4294967210 169:4294967183 168:4294967208 167:4294967289 166:4294967136 165:4294967160 164:4294967136 163:4294967196 162:4294967166 161:4294967215 160:4294967200 159:4294967148 158:4294967246 157:4294967203 156:4294967196 155:4294967230 154:4294967292 153:4294967193 152:4294967176 151:4294967292 150:4294967250 149:4294967167 148:4294967252 147:4294967208 146:4294967264 145:4294967280 144:4294967184 143:4294967248 142:4294967216 141:4294967160 140:4294967180 139:4294967255 138:4294967238 137:4294967262 136:4294967176 135:4294967220 134:4294967196 133:4294967271 132:4294967292 131:4294967179 130:4294967170 129:4294967280 128:4294967296 127:4294967280 126:4294967292 125:4294967250 124:4294967292 123:4294967259 122:4294967178 121:4294967237 120:4294967280 119:4294967278 118:4294967186 117:4294967274 116:4294967280 115:4294967215 114:4294967214 113:4294967280 112:4294967264 111:4294967289 110:4294967270 109:4294967221 108:4294967220 107:4294967267 106:4294967254 105:4294967250 104:4294967248 103:4294967233 102:4294967244 101:4294967228 100:4294967200 99:4294967292 98:4294967208 97:4294967261 96:4294967232 95:4294967290 94:4294967254 93:4294967292 92:4294967284 91:4294967222 90:4294967220 89:4294967251 88:4294967248 87:4294967280 86:4294967280 85:4294967295 84:4294967292 83:4294967219 82:4294967218 81:4294967247 80:4294967280 79:4294967246 78:4294967274 77:4294967292 76:4294967252 75:4294967250 74:4294967252 73:4294967264 72:4294967256 71:4294967287 70:4294967250 69:4294967238 68:4294967244 67:4294967263 66:4294967292 65:4294967235 64:4294967296 63:4294967292 62:4294967292 61:4294967239 60:4294967280 59:4294967245 58:4294967280 57:4294967271 56:4294967264 55:4294967270 54:4294967274 53:4294967254 52:4294967248 51:4294967295 50:4294967250 49:4294967257 48:4294967280 47:4294967254 46:4294967284 45:4294967265 44:4294967292 43:4294967280 42:4294967292 41:4294967259 40:4294967280 39:4294967274 38:4294967290 37:4294967289 36:4294967292 35:4294967285 34:4294967278 33:4294967292 32:4294967296 31:4294967292 30:4294967280 29:4294967280 28:4294967292 27:4294967274 26:4294967274 25:4294967275 24:4294967280 23:4294967284 22:4294967292 21:4294967292 20:4294967280 19:4294967290 18:4294967292 17:4294967295 16:4294967296 15:4294967295 14:4294967292 13:4294967287 12:4294967292 11:4294967292 10:4294967290 9:4294967292 8:4294967296 7:4294967292 6:4294967292 5:4294967295 4:4294967296 3:4294967295 2:4294967296; 415/415 ranges have maxFair a whole multiple of the range, so the per-value bias conditional on acceptance is exactly 0 (worst over all ranges 0; bound 2^-32 = 2.328e-10); per-draw first-chunk rejection probability (2^32 − maxFair)/2^32 is at most 9.453e-8 (range 410). Rejection census over this population, counted on the draws that produced the shoes compared above: 0 first-chunk rejection(s) and 0 cursor advance(s) in 2,490,000 draws (6,000 shoes × 415), against 0.0569 expected — the capture does not exercise the branch, so it is shown on a vector instead: nonce 5591308, cursor 409, range 410 (the committed Pass-1 seed pair) rejects its first chunk and draws 116 (expected 116; deleting the branch gives 312), and its full shoe records 1 first-chunk rejection(s) — OK. This bounds the AUDITOR'S draw; that the operator's server takes the same branch is ASSUMED (MANIFEST DL-2). Player-verifier parity (ProvablyFair.org site VerifyBets games/blackjack/derive.js + lib/hmac-sha256.js, vendored in verifier-parity/ and pinned in src/config.ts SITE_VERIFIER_PINS): games/blackjack/derive.js sha256 38792bc400640ea4… matches its pin; lib/hmac-sha256.js sha256 2095571fecd77f53… matches its pin; the site's deriveBlackjackSync replayed on a declared sample of 515/515 rounds (all 401 split rounds + the nonce-0 round of all 120 epochs): recorded player and dealer hands card for card, the first 24 shoe cards, and return per unit stake on 916 hands equal to this package's derivation from the cards — 0 disagreement(s); the site's full 416-card shoe equals this package's on 121/121 shoes (the 120 epoch-first rounds and the rejection vector). Not run on the other 5,485 rounds (its pure-JavaScript SHA-256 costs ~50 ms per round); those are recomputed by this package's own engine above.",
+      "profileIds": [
+        "BLACKJACK-07",
+        "BLACKJACK-08",
+        "BLACKJACK-10",
+        "BLACKJACK-24"
+      ],
+      "profileChecks": [
+        {
+          "id": "BLACKJACK-07",
+          "coverage": "full",
+          "note": "6,000/6,000 hands recomputed card for card in strict draw order — 5,599 single-hand rounds PDPD then player then dealer, 401 split rounds in the declared split order (main[0], dealer[0], split[0], dealer[1], main[1], split[1], split plays out, main plays out, dealer) — coverage bound to EXPECTED_HANDS, a skipped hand FAILs"
+        },
+        {
+          "id": "BLACKJACK-08",
+          "coverage": "full",
+          "note": "the bound is IN THE STEP DETAIL as computed quantities: maxFair for each of the 415 ranges the shuffle draws over (src/rng.ts maxFairFor, the one definition the draw reads), 415/415 exact multiples so the per-value bias is exactly 0, the worst first-chunk rejection probability 9.453e-8 (range 410), and the rejection census counted on the draws that produced the compared shoes — 0 first-chunk rejections and 0 cursor advances in 2,490,000 draws against 0.0569 expected. The unexercised branch is shown on a vector (Pass-1 seed pair, nonce 5,591,308, cursor 409, range 410: draws 116, deletion gives 312). That the operator's server takes the branch is ASSUMED (MANIFEST DL-2)"
+        },
+        {
+          "id": "BLACKJACK-10",
+          "coverage": "full",
+          "note": "the rules replay is carried by Steps 6 (deal structure PDPD and the whole action stream: grammar G1–G6 plus hit+double tokens = extra cards, 6,000/6,000), 11 (S17 replayed both directions — over-draw and under-draw — with the 3:2-natural exemptions counted) and 13 (peek: 283 dealer naturals settled before any player action). Per-response card counts: the capture recorded settled rounds only, so there are no per-action responses to count (MANIFEST DL-10)"
+        },
+        {
+          "id": "BLACKJACK-24",
+          "coverage": "full",
+          "note": "the ProvablyFair.org site verifier (VerifyBets games/blackjack/derive.js + lib/hmac-sha256.js) is vendored byte-for-byte in verifier-parity/, its SHA-256 recorded in src/config.ts SITE_VERIFIER_PINS and re-hashed on every run, and EXECUTED: deriveBlackjackSync on a declared sample of 515 rounds (all 401 splits + the nonce-0 round of all 120 epochs) reproduces the recorded hands card for card and the per-hand return this package derives (916 hands), and its full 416-card shoe equals this package's on 121 shoes incl. the rejection vector. Its pure-JS SHA-256 (~50 ms/round) is why the other 5,485 rounds are not run through it. scripts/check-site-verifier.mjs compares a site checkout with the pins"
+        }
+      ]
+    },
+    {
+      "step": 7,
+      "name": "Client-Seed Dependence",
+      "status": "PASS",
+      "detail": "1000 rounds (every 6th recomputable round) re-derived under a WRONG client seed and under an EMPTY client seed: the first card survives on 26 (wrong) and 18 (empty), against the model rate 1/52 for an independent shoe — E = 19.231, σ = 4.343, gate E + 5σ = 40.945 — so the deal changes on 974/1000 and 982/1000; A–C/E/F epoch client seeds bound to their declared form: 110/110 match /^audit[0-9a-f]{12}$/, 110 distinct. THE GENERATOR: capture/capture-liqd-blackjack.aug05-rig.mjs SHA-256 4a214c871764… = the src/config.ts pin; generator lines found 1/1 randHex = crypto.getRandomValues (the global Web Crypto CSPRNG, `crypto` rebound 0×), 1/1 clientSeedFor = 'audit' + randHex(6) | pfaudit-STAMP-E, 1/1 STAMP = Date.now(); 4/4 rotate() calls pass clientSeedFor(...); Math.random 1× in the file, 0 outside the demo renderer; the rig's phase plan (120 epochs) equals the dataset's phase and seed tag on 120/120 epochs; 110/110 audit-tagged seeds have the randHex(6) shape, 10/10 Phase D seeds carry their own epoch and 1 stamp (1785954682036 = 2026-08-05T18:31:22.036Z), 6 ms before the dataset's meta.startedAt. Provenance CIRCUMSTANTIAL: the rig was never committed; the copy is byte-for-byte of an untracked workspace file modified 2026-08-05T18:30:54Z (MANIFEST DL-16). Phase D is Step 26",
+      "profileIds": [
+        "BLACKJACK-06"
+      ],
+      "profileChecks": [
+        {
+          "id": "BLACKJACK-06",
+          "coverage": "full",
+          "note": "the wrong-seed and generator half: 1,000 rounds re-derived under a WRONG and under an EMPTY client seed, first-card survivors gated at the model rate E + 5σ (E = n/52 = 19.23, gate 40.95; measured 26 and 18), a hard FAIL above it or at 0 % change. \"The A–C generator is disclosed and is a CSPRNG\" — met since 2026-09-25 on CIRCUMSTANTIAL provenance: the capture rig is shipped byte-for-byte (capture/capture-liqd-blackjack.aug05-rig.mjs, SHA-256 pinned as CAPTURE_RIG_SHA256) and Step 7 binds it to the data — randHex = crypto.getRandomValues (the global Web Crypto CSPRNG, not rebound), clientSeedFor = 'audit' + randHex(6) for A–C/E/F and pfaudit-STAMP-E for D, 4/4 rotate() calls through it, Math.random only in the demo renderer, the rig's phase plan equal to the dataset on 120/120 epochs, 110/110 non-D seeds in the randHex(6) shape (all distinct), 10/10 D seeds carrying their own epoch and one stamp 1785954682036, 6 ms before meta.startedAt. The rig was never committed (untracked workspace file, mtime 2026-08-05T18:30:54Z) — MANIFEST DL-16 says so. Phase D is Step 26. FAIL probed: rig randHex swapped to Math.random and re-pinned; rig plan shifted and re-pinned (R78, R79)"
+        }
+      ]
+    },
+    {
+      "step": 8,
+      "name": "Per-Hand Payout (reconstructed from cards)",
+      "status": "PASS",
+      "detail": "6401/6401 hands: bust→0, natural vs non-natural dealer→5/2 (Step 9), both natural→1×, dealer natural→0, then totals win→2×, push→1×, loss→0 — derived from cards+rules, never from a label (0 mismatches); the operator's per-hand result label reconciled against the derivation (won ⇔ positive return, a push included; lost ⇔ zero): 6401/6401 agree; witnessed variants: 27 two-card 21(s) on a split hand settle as an ordinary 21, not 3:2 (0 mismatch), 1448 doubled hand(s) settle at 2× per hand through the money path below, split hands summed per hand | money path (Step 8b): the round total is the capture script's own sum of the casino's credit records, so this identity carries information on the 1283 doubled rounds only — there it shows each double bet was credited like its hand — and it cannot detect a skim by the casino; 6000/6000 bets reconcile exactly as (Σ hand win)×m + Σ side win | money grid: 42894/42894 recorded amounts are exact multiples of 1e-8 (capture accounting precision), 0 off-grid. Both comparisons above are EXACT INTEGER equality in those 1e-8 units, not a float tolerance: a one-unit discrepancy fails",
+      "profileIds": [
+        "BLACKJACK-11",
+        "BLACKJACK-13"
+      ],
+      "profileChecks": [
+        {
+          "id": "BLACKJACK-11",
+          "coverage": "full",
+          "note": "every per-hand credit reconstructed from the cards (Step 8); round credit == (Σ per-hand credit) × m + Σ side-bet credit (insurance included) as EXACT integer equality in 1e-8 settlement units on 6,000/6,000 rounds, with partial-double splits bounded (Step 8b). The round credit is the capture script's own sum of the casino's credit records, so 8b carries information on the 1,283 doubled rounds only (each double bet credited like its hand) and cannot detect a skim by the casino; 42,894/42,894 recorded amounts on-grid; no float tolerance anywhere"
+        },
+        {
+          "id": "BLACKJACK-13",
+          "coverage": "full",
+          "note": "the profile's settlement check is carried by Steps 8 (per-hand return from the cards in exact 1e-8 units, the operator's won/lost label reconciled against it 6,401/6,401, 27 two-card 21s on split hands settled as an ordinary 21, 1,448 doubled hands at 2× per hand through the money path, split hands summed per hand), 9 (3:2 isolated — 243 winning naturals at 2×credit == 5×stake) and 10 (insurance 2:1 iff dealer natural on the 446 insurance bets the casino booked on the capture's decline request, stake 0.5× main; MANIFEST DL-17)"
+        }
+      ]
+    },
+    {
+      "step": 9,
+      "name": "Blackjack Pays 3:2",
+      "status": "PASS",
+      "detail": "243 winning natural blackjacks, all return exactly 2.5× stake (3:2, src/config.ts RULES) — compared as 2×credit == 5×stake in integer 1e-8 settlement units, no tolerance (0 mismatches)",
+      "profileIds": [
+        "BLACKJACK-13"
+      ],
+      "profileChecks": [
+        {
+          "id": "BLACKJACK-13",
+          "coverage": "full",
+          "note": "the profile's settlement check is carried by Steps 8 (per-hand return from the cards in exact 1e-8 units, the operator's won/lost label reconciled against it 6,401/6,401, 27 two-card 21s on split hands settled as an ordinary 21, 1,448 doubled hands at 2× per hand through the money path, split hands summed per hand), 9 (3:2 isolated — 243 winning naturals at 2×credit == 5×stake) and 10 (insurance 2:1 iff dealer natural on the 446 insurance bets the casino booked on the capture's decline request, stake 0.5× main; MANIFEST DL-17)"
+        }
+      ]
+    },
+    {
+      "step": 10,
+      "name": "Insurance Pays 2:1 iff Dealer Blackjack",
+      "status": "PASS",
+      "detail": "446 insurance bets: wins occur on exactly the dealer-blackjack hands and return exactly 3× stake, losses exactly 0 — integer 1e-8 settlement units, no tolerance (0 false wins, 0 missed wins, 0 wrong payouts); every insurance stake is 0.5× the round's main stake (0 not)",
+      "profileIds": [
+        "BLACKJACK-13"
+      ],
+      "profileChecks": [
+        {
+          "id": "BLACKJACK-13",
+          "coverage": "full",
+          "note": "the profile's settlement check is carried by Steps 8 (per-hand return from the cards in exact 1e-8 units, the operator's won/lost label reconciled against it 6,401/6,401, 27 two-card 21s on split hands settled as an ordinary 21, 1,448 doubled hands at 2× per hand through the money path, split hands summed per hand), 9 (3:2 isolated — 243 winning naturals at 2×credit == 5×stake) and 10 (insurance 2:1 iff dealer natural on the 446 insurance bets the casino booked on the capture's decline request, stake 0.5× main; MANIFEST DL-17)"
+        }
+      ]
+    },
+    {
+      "step": 11,
+      "name": "Dealer Stands on Soft 17 (S17)",
+      "status": "PASS",
+      "detail": "6000 dealer hands replayed against S17: 0 over-draws (took a card on 17+), 0 under-draws (stood below 17 with a live player hand); 108 hands finished on soft 17 — the dealer stood, confirming S17 rather than H17; 177 hands exempt (player natural blackjack settles 3:2 before the dealer draws)",
+      "profileIds": [
+        "BLACKJACK-10"
+      ],
+      "profileChecks": [
+        {
+          "id": "BLACKJACK-10",
+          "coverage": "full",
+          "note": "the rules replay is carried by Steps 6 (deal structure PDPD and the whole action stream: grammar G1–G6 plus hit+double tokens = extra cards, 6,000/6,000), 11 (S17 replayed both directions — over-draw and under-draw — with the 3:2-natural exemptions counted) and 13 (peek: 283 dealer naturals settled before any player action). Per-response card counts: the capture recorded settled rounds only, so there are no per-action responses to count (MANIFEST DL-10)"
+        }
+      ]
+    },
+    {
+      "step": 12,
+      "name": "Double-After-Split Allowed (DAS)",
+      "status": "PASS",
+      "detail": "165 of 401 split rounds carry both a `split` and a `double` action token ⇒ DAS allowed. Derived from the action stream, not from the capture script's `split`/`doubled` summary booleans; those booleans are required to agree and do (165 of 401)",
+      "profileIds": [
+        "BLACKJACK-15"
+      ],
+      "profileChecks": [
+        {
+          "id": "BLACKJACK-15",
+          "coverage": "full",
+          "note": "the rule-and-coverage check is carried by Step 27 (coverage floors asserted as floors — splits 401/200, ace splits 35/20, DAS 165/100, doubles 1,448/500, insurance records on a dealer Ace 446/100, a shortfall FLAGs — and the rule table: nine rules OBSERVED with witness counts, three ASSUMED: re-split and surrender (MANIFEST DL-5) and insurance can be declined (MANIFEST DL-17)), 12 (DAS from the token stream), 14 (0 surrender tokens; the capture script has no surrender call), 28 (insurance records only on a dealer Ace, one per capture insurance request) and 31 (every round staked at its phase's planned stake); uncaptured/voided games are Step 4's gap count (0 against 0 declared)"
+        }
+      ]
+    },
+    {
+      "step": 13,
+      "name": "Dealer Peeks for Blackjack",
+      "status": "PASS",
+      "detail": "283 dealer blackjacks, all settled with no player play action (peek on Ace/10) — 283/283",
+      "profileIds": [
+        "BLACKJACK-10"
+      ],
+      "profileChecks": [
+        {
+          "id": "BLACKJACK-10",
+          "coverage": "full",
+          "note": "the rules replay is carried by Steps 6 (deal structure PDPD and the whole action stream: grammar G1–G6 plus hit+double tokens = extra cards, 6,000/6,000), 11 (S17 replayed both directions — over-draw and under-draw — with the 3:2-natural exemptions counted) and 13 (peek: 283 dealer naturals settled before any player action). Per-response card counts: the capture recorded settled rounds only, so there are no per-action responses to count (MANIFEST DL-10)"
+        }
+      ]
+    },
+    {
+      "step": 14,
+      "name": "No Surrender Action Observed",
+      "status": "PASS",
+      "detail": "0 surrender actions across 6000 rounds; the capture script has no surrender call, so this step shows only that surrender was never TAKEN, not whether the casino offers it. The action vocabulary is hit, stand, double, no-ins, split. no-ins is the capture's decline request (place-insurance-bet {betAmount: 0}); the casino booked a funded bet on 446 of 446. LIQD's own UI declines with {acceptInsurance: false} (E24), which the capture never sent (MANIFEST DL-17).",
+      "profileIds": [
+        "BLACKJACK-15"
+      ],
+      "profileChecks": [
+        {
+          "id": "BLACKJACK-15",
+          "coverage": "full",
+          "note": "the rule-and-coverage check is carried by Step 27 (coverage floors asserted as floors — splits 401/200, ace splits 35/20, DAS 165/100, doubles 1,448/500, insurance records on a dealer Ace 446/100, a shortfall FLAGs — and the rule table: nine rules OBSERVED with witness counts, three ASSUMED: re-split and surrender (MANIFEST DL-5) and insurance can be declined (MANIFEST DL-17)), 12 (DAS from the token stream), 14 (0 surrender tokens; the capture script has no surrender call), 28 (insurance records only on a dealer Ace, one per capture insurance request) and 31 (every round staked at its phase's planned stake); uncaptured/voided games are Step 4's gap count (0 against 0 declared)"
+        }
+      ]
+    },
+    {
+      "step": 15,
+      "name": "Perfect Pairs Side Bet",
+      "status": "PASS",
+      "detail": "5800/5800 Perfect Pairs bets re-derived from the initial two cards against the 25/13/6 paytable, payouts compared as exact integer 1e-8 settlement units: 0 category, 0 payout mismatch; every side stake equals 1× the round's main stake (0 not); winning categories MIXED_PAIR:234, COLORED_PAIR:123, PERFECT_PAIR:100",
+      "profileIds": [
+        "BLACKJACK-14"
+      ],
+      "profileChecks": [
+        {
+          "id": "BLACKJACK-14",
+          "coverage": "full",
+          "note": "the side-bet check is carried by Steps 15 and 16 (5,800 + 5,800 bets re-derived from the split-aware initial snapshot, category and exact payout = stake × (paytable + 1), each side stake 1× the main stake), 23 (every paytable category exercised: 3/3 Perfect Pairs, 5/5 21+3) and 29 (11,600 snapshots equal the initial deal — invariant to later play). No forfeit-on-split exists at LIQD: split rounds settle both side bets on the original pair (Step 15/16 score them with the rest)"
+        }
+      ]
+    },
+    {
+      "step": 16,
+      "name": "21+3 Side Bet",
+      "status": "PASS",
+      "detail": "5800/5800 21+3 bets re-derived (5/10/30/40/100), payouts compared as exact integer 1e-8 settlement units: 0 category, 0 payout mismatch; every side stake equals 1× the round's main stake (0 not) [FLUSH:345, STRAIGHT:166, THREE_OF_A_KIND:32, STRAIGHT_FLUSH:14, SUITED_THREE_OF_A_KIND:1]",
+      "profileIds": [
+        "BLACKJACK-14"
+      ],
+      "profileChecks": [
+        {
+          "id": "BLACKJACK-14",
+          "coverage": "full",
+          "note": "the side-bet check is carried by Steps 15 and 16 (5,800 + 5,800 bets re-derived from the split-aware initial snapshot, category and exact payout = stake × (paytable + 1), each side stake 1× the main stake), 23 (every paytable category exercised: 3/3 Perfect Pairs, 5/5 21+3) and 29 (11,600 snapshots equal the initial deal — invariant to later play). No forfeit-on-split exists at LIQD: split rounds settle both side bets on the original pair (Step 15/16 score them with the rest)"
+        }
+      ]
+    },
+    {
+      "step": 17,
+      "name": "Basic-strategy RTP vs exact 8-deck solver",
+      "status": "PASS",
+      "detail": "exact TD edge 0.487675% per initial bet (0.432435% per total wagered, avg wager 1.127741); simulation 0.4770% over 30,000,000 rounds (±0.0210 pp 1σ, σ computed from the PINNED 30,000,000 rounds in src/config.ts, never from the artifact) → 0.51σ, limit 3σ; per total wagered 0.51σ (±0.0186 pp 1σ). Exact figure recomputed in-step, not read from the artifact. Card-removal lift 0.082713 pp matches the in-step recomputation. retained input VERIFIED: the artifact's masterSeed is the pinned SIM_MASTER_SEED (src/config.ts), and re-running the first 1,000 rounds from it reproduces convergence[0] exactly (RTP 1.0065, SE 0.03636619309193636) — the full 30,000,000-round reconstruction is `npx ts-node src/deep-replay.ts`.",
+      "profileIds": [
+        "BLACKJACK-18"
+      ],
+      "profileChecks": [
+        {
+          "id": "BLACKJACK-18",
+          "coverage": "full",
+          "note": "the exact 8-deck TD solve (src/exact-play.ts) is recomputed in-step and reads no operator figure (the capture-side fields are deleted on load); anchored by the exact-rational reduced-shoe oracle at 1e-12 (tests/blackjack/exactOracleTests.ts) and Wizard of Odds with settings and date (wooAnchorTests.ts); the negative control that a corrupted rule set moves the figure is the mutation battery in exactSolverTests.ts"
+        }
+      ]
+    },
+    {
+      "step": 18,
+      "name": "Simulation Pass 1 — first-card uniformity, serial independence, RTP vs the exact solve",
+      "status": "PASS",
+      "detail": "1,000,000 rounds of the REAL blackjackShoe played under the declared basic strategy, RE-DERIVED from the artifact's 100 census rows of 10,000 nonces: first-card rank χ²=6.73 (df 12 PINNED as RANKS−1, p=0.8752, threshold ≥0.01); serial r₁=5.732e-4 (|z|=0.57, threshold <3), runs 496,801 (z=-0.47, p=0.6387, threshold ≥0.01); RTP 99.4977% per initial bet vs the exact 8-deck solve 99.5123% (recomputed in-step) at σ = 1.15/√1,000,000 = 0.1150 pp → -0.13σ, limit 3σ; player naturals 47,078, dealer naturals 47,441. Every census total and every derived statistic the artifact states agrees with the re-derivation (census exact, statistics within the reproduction tolerance 1e-14 + 1e-12·max). RE-DEALT from the recorded seed pair: 2/2 declared rows (the first and the last, 20,000 shoes) equal the artifact's rows field for field; the other 98 rows are reproduced in full by `npm run simulate` (byte-for-byte diff) and `npx ts-node src/deep-replay.ts`, not in this step. The seed pair (server c3b8b8d6b50b6796b56cd6a7f4484f35, client df0a6fb592b2813da9d8c1cad1c98dfe) re-derives from the PINNED master seed under pass1-shoe-server/pass1-shoe-client at index 0",
+      "profileIds": [
+        "BLACKJACK-20"
+      ],
+      "profileChecks": [
+        {
+          "id": "BLACKJACK-20",
+          "coverage": "full",
+          "note": "1,000,000 hands (SIM_PASS1_ROUNDS, the profile floor) of the REAL blackjackShoe under the declared basic strategy, on the seed pair derived from the PINNED master seed (SIM_MASTER_SEED). The artifact carries the stream's census as 100 exact integer rows of 10,000 nonces, and Step 18 RE-DERIVES every statistic from those rows with the function the simulator used: first-card χ² 6.73 (df 12 pinned, p = 0.8752), serial r₁ 5.73e-4 (|z| 0.57) and runs p 0.6387, and RTP 99.4977 % per initial bet against the exact 8-deck solve 99.5123 % (recomputed in-step) at the stated σ = 1.15/√1,000,000 → −0.13σ, limit 3σ. Rows 0 and 99 are re-dealt from the seed pair in verify (exact); the whole census is reproduced byte for byte by `npm run simulate` (outputs/run/simulation-diff.json) and by src/deep-replay.ts (100/100 rows, outputs/deep-replay-report.json, pinned). FAIL probed: a census row edited and re-pinned; a derived statistic edited and re-pinned (tests/mutations.json R67, R68)"
+        }
+      ]
+    },
+    {
+      "step": 19,
+      "name": "Simulation Pass 2 — cherry-pick detection (casino seeds)",
+      "status": "PASS",
+      "detail": "120/120 revealed seeds × 10,000 nonces, each row bound one-to-one to a revealed seed record by (epoch, hashedServerSeed). PRIMARY — MONEY (rule fixed in src/config.ts before first computed): the declared basic strategy's net return per 50-round window, served window = nonces 0..49 (the captured range) ranked against the seed's own 199 later windows (bootstrap null, one-sided): 1 seed(s) at p ≤ 0.01 RE-DERIVED from the rows (family gate: FLAG above 6, the binomial upper tail at 0.001); 63 of 120 served windows returned less than staked; pooled served-window net -95.5 initial bets over 6,000 rounds vs the exact 8-deck mean -29.2605 (exact TD solve, recomputed in-step), σ = 1.146686·√6,000 = 88.822 — the EXACT per-round SD, √(E[R²] − E[R]²) = √(1.314913 − 2.378e-5) from the exact 8-deck solve with splits played sequentially, recomputed in-step (sequential mean vs the exact mean |Δ| 4.2e-17; equal to outputs/exact-rtp.json finite8TDMoments, anchored to the rational oracle at 1e-12) → z = -0.746 (FLAG below −3.09); pooled bootstrap p over the 199 later pooled windows = 0.2650. Power of the pooled rule at a served-window RTP shortfall of 1 %: 0.8 %, 2 %: 4.1 %, 5 %: 61.3 %, 10 %: 100.0 %. MEASURED against a return-selecting attacker (outputs/cherry-pick-attack.json, npm run attack — 50 candidate server seeds per epoch, the most house-favourable served block kept): 34/120 selected seeds flagged by this rule, pooled z = -23.555 → DETECTED at the family gate or the pooled gate. RE-DEALT from the revealed seeds: 120/120 served windows (ranks and money, 6,000 rounds) and 120/120 declared later windows (window 1 + epoch mod 199) equal the rows exactly; the other 198 windows per seed are reproduced in full by `npm run simulate` and `npx ts-node src/deep-replay.ts`, not in this step. SECONDARY — first-card rank screen: 7 flag(s) RECOMPUTED (expected ~5.7 by chance at p₀=0.0475 = α(1−α), α=0.05 PINNED); binomial survival P=0.3444, threshold ≥0.01; earlyChi2 re-derived from the revealed seeds 120/120; lateChi2 and latePValue re-derived from each row's 9,950-nonce rank counts at df 12: 120/120 agree. RETAINED BOOTSTRAP NULL: bootstrap-nulls.float64le present, 16,000 bytes = 2,000 float64 statistics in generation order, SHA-256 c69eeb27b6e0… matching the artifact's nullSHA256; 41 of 2,000 replicates re-derived and compared in place: 41/41 reproduce exactly; all 120/120 earlyBootstrapP values RECOMPUTED from the retained statistics (the other replicates: `python3 replay/replay-bootstrap.py`). Primary defence remains the client-seed-after-commitment mitigation. 110 of 120 epochs used a fresh client seed set after the commitment (Steps 2 and 7), so this result cannot show seed selection.",
+      "profileIds": [
+        "BLACKJACK-21"
+      ],
+      "profileChecks": [
+        {
+          "id": "BLACKJACK-21",
+          "coverage": "full",
+          "note": "every revealed seed × 10,000 nonces; early window = nonces 0..49, the captured range; PRIMARY statistic money — the declared strategy's net per 50-round window, the served window ranked against the seed's own 199 later windows (bootstrap null, one-sided, rule fixed in src/config.ts before first computed: p ≤ 0.01 per seed, family gate 6 at 0.001) — 1/120 flagged; the pooled served-window net against the EXACT mean AND the EXACT variance (since 2026-09-25): σ = √(E[R²] − E[R]²) = 1.146686160256228 per round from the exact 8-deck solve with split hands played sequentially (src/exact-play.ts moments()), recomputed in-step, its sequential mean equal to the exact mean (|Δ| 4e-17), bound to outputs/exact-rtp.json finite8TDMoments, and E[R²] anchored to anchor/oracle.py exact fractions on three reduced shoes at 1e-12 — pooled z −0.746 (gate −3.090); first-card rank uniformity kept as the secondary screen (7/120, P = 0.3444); every window's statistic re-derived in verify from the rows, the served window and one declared later window of every seed re-dealt from the revealed seeds (120/120), the whole census by src/deep-replay.ts (120/120); power printed with the result and MEASURED against a return-selecting attacker at the same σ (npm run attack: 50 candidates per epoch → 34/120 seeds flagged, pooled z −23.555, detected). FAIL probed: R69, R70, and the SD itself — the artifact's sdPerRound put back to 1.15, the exact-rtp.json SD edited, the split cross term dropped from the solver (R75, R76, R77)"
+        }
+      ]
+    },
+    {
+      "step": 20,
+      "name": "House-edge reconciliation (nominal config vs actual)",
+      "status": "PASS",
+      "detail": "RTP under both conventions from the exact solve: 99.512325% per initial bet, 99.567565% per total amount wagered, average wager 1.127741 initial bets per round. Operator figures reconciled: (1) config houseEdge 1% (nominal internal label; LIQD's game-settings response, E23; the dataset's meta.houseEdge, the capture script's typed copy, agrees) vs exact basic-strategy edge 0.4877% per initial bet (0.4324% per total amount wagered); 30,000,000-round simulation reads 0.4770% per initial bet [exact 8-deck solver (TD, per initial bet)] — the measured edge is well under the 1% label under both conventions, so the player is not worse off than it; a disclosure, not a fairness defect (outcome integrity proven by Steps 1–16); (2) storefront \"Edge: 0.48%\" (E16) vs the exact per-initial-bet edge 0.4877%: gap 0.0077 pp, inside one display unit (0.01 pp) — the surface figure is the exact edge truncated to two decimals (rounding would show 0.49%), and it matches the per-initial-bet convention, not the per-total-wagered one (0.4324%); (3) the exchangeRate field is Step 21; the dataset swept for any other key matching /edge|rtp/i (a served effective-edge or RTP field): none — meta.houseEdge is the only one. Side-bet edges by exact enumeration over the 416-card shoe: Perfect Pairs 9/415 = 2.1687% (weights sum to C(416,2) = 86320), 21+3 4596/124085 = 3.7039% (weights sum to C(416,3) = 11912160)",
+      "profileIds": [
+        "BLACKJACK-19"
+      ],
+      "profileChecks": [
+        {
+          "id": "BLACKJACK-19",
+          "coverage": "full",
+          "note": "RTP under both conventions from the exact solve with the average wager (99.512325 % per initial bet, 99.567565 % per total wagered, 1.127741); both side-bet edges by exact enumeration over the 416-card shoe (9/415 and 4596/124085, weights checked against C(416,2) and C(416,3)); every operator edge figure reconciled — the config label 1% (LIQD's game-settings response, E23; bound to the dataset's meta.houseEdge) against the modelled 0.4877 %, the storefront \"Edge: 0.48%\" within one display unit of the per-initial-bet edge (the exact edge truncated to two decimals), and a sweep of the whole dataset for any other /edge|rtp/i field (none); a contradicting figure FLAGs with origin operator. The FX field is Step 21"
+        }
+      ]
+    },
+    {
+      "step": 21,
+      "name": "No FX haircut observed in this capture",
+      "status": "PASS",
+      "detail": "exchangeRate distribution over 12046 side-bet records: 12046×1.00000000; 0 main-game hands carry it (expected 0); 0 nonzero fiat amounts (expected 0). No haircut is observable: the fiat* fields are zero throughout and every crypto payout reconciles at face value from the cards (Step 8), with no fx factor in the reconstruction — so the field is not acting as a house-edge mechanism over this capture. It is NOT proven that the field never touches the crypto betAmount/winningAmount: at rate 1.00, applied-at-1.00 and not-applied are indistinguishable in the data. Schema-inferred fiat display field; ruling out the mechanism itself would need a capture at a rate other than 1.00, or source access.",
+      "profileIds": [
+        "BLACKJACK-19"
+      ],
+      "profileChecks": [
+        {
+          "id": "BLACKJACK-19",
+          "coverage": "full",
+          "note": "the FX-field half: exchangeRate 1.00 on 12,046 side-bet records, 0 main hands carry it, 0 non-zero fiat amounts, every crypto payout reconciled at face value; unidentifiable at rate 1.00 (MANIFEST DL-8). The edge figures are Step 20"
+        }
+      ]
+    },
+    {
+      "step": 22,
+      "name": "Bet-Size Invariance",
+      "status": "PASS",
+      "detail": "200/200 Phase E hands at $10.00 recompute card-for-card from the revealed seed — 0 mismatch. The shoe derivation takes no wager argument (serverSeed, clientSeed, nonce only); outcomes at $10.00 are produced by the identical engine as the $0.10 hands (stakes present: $0.1, $10), so the deal cannot depend on bet size",
+      "profileIds": [
+        "BLACKJACK-12"
+      ],
+      "profileChecks": [
+        {
+          "id": "BLACKJACK-12",
+          "coverage": "full",
+          "note": "200/200 Phase E hands at $10 (100× the $0.10 base) recompute card for card under the same engine; the shoe derivation takes no wager argument; Phase E size and stake bound to PHASE_PLAN (Steps 24, 31)"
+        }
+      ]
+    },
+    {
+      "step": 23,
+      "name": "Side-Bet Config Completeness",
+      "status": "PASS",
+      "detail": "Perfect Pairs: 3/3 paytable categories observed across 5800 bets [MIXED_PAIR, COLORED_PAIR, PERFECT_PAIR]; 21+3: 5/5 observed across 5800 bets [FLUSH, STRAIGHT, THREE_OF_A_KIND, STRAIGHT_FLUSH, SUITED_THREE_OF_A_KIND]",
+      "profileIds": [
+        "BLACKJACK-14"
+      ],
+      "profileChecks": [
+        {
+          "id": "BLACKJACK-14",
+          "coverage": "full",
+          "note": "the side-bet check is carried by Steps 15 and 16 (5,800 + 5,800 bets re-derived from the split-aware initial snapshot, category and exact payout = stake × (paytable + 1), each side stake 1× the main stake), 23 (every paytable category exercised: 3/3 Perfect Pairs, 5/5 21+3) and 29 (11,600 snapshots equal the initial deal — invariant to later play). No forfeit-on-split exists at LIQD: split rounds settle both side bets on the original pair (Step 15/16 score them with the rest)"
+        }
+      ]
+    },
+    {
+      "step": 24,
+      "name": "Phase Coverage & Labels",
+      "status": "PASS",
+      "detail": "6 phases in the capture plan (src/config.ts PHASE_PLAN), each present with the planned count and the dataset's own phase table agreeing on count and stake (A:3300/3300, B:1000/1000, C:500/500, D:500/500, E:200/200, F:500/500); plan total 6000 and observed total 6000 both equal EXPECTED_HANDS 6000",
+      "profileIds": [
+        "BLACKJACK-05"
+      ],
+      "profileChecks": [
+        {
+          "id": "BLACKJACK-05",
+          "coverage": "full",
+          "note": "the per-phase half: every phase's count equals src/config.ts PHASE_PLAN (A 3,300 · B 1,000 · C 500 · D 500 · E 200 · F 500), and the dataset's own phase table must agree with the plan on count AND stake — it is scored, not trusted; plan total bound to EXPECTED_HANDS"
+        }
+      ]
+    },
+    {
+      "step": 25,
+      "name": "Artifact Hash Integrity",
+      "status": "PASS",
+      "detail": "10 pinned artifacts, present and matching their SHA-256 pins in src/config.ts, plus outputs/report-figures.json RE-DERIVED field for field (it is rewritten by every run, so a hash pin would be enforced against a file the same command replaces; recomputation proves the published figures are a deterministic function of the pinned dataset and the committed engines — NOT that the shipped file was independently produced, which is what the Wizard of Odds anchor is for) — data/blackjack-6000hands.json: c2a28c5164a5… matches; outputs/simulation-results.json: 26ab1574ced2… matches; outputs/rtp-convergence.html: 45ce9d7ad631… matches; outputs/exact-rtp.json: f89b1920086b… matches; outputs/cherry-pick-attack.json: 44d45d84a8cd… matches; outputs/rng-branch-coverage.json: eb2c74a1ecf8… matches; outputs/simulation-provenance.json: 5ad0e673045c… matches; outputs/bootstrap-nulls.float64le: c69eeb27b6e0… matches; outputs/deep-replay-report.json: 44f2c8377f14… matches; outputs/bootstrap-replay-report.json: c4cf022c5d34… matches; value domains: 32,848 numeric leaves in 9 JSON artifacts of record, each on a declared path (src/domains.ts) and inside its domain; no run-metadata key in any of them; outputs/report-figures.json: re-derived from the pinned dataset and reconciles field for field (10 top-level fields, incl. 2 worked examples); dataset config block meta.payout + meta.decks: all 11 figures (3:2, 2:1, the three Perfect Pairs and five 21+3 paytable entries, 8 decks) equal src/config.ts; rule set single-sourced in src/config.ts RULES (11 rules): the exact solver's LIQD_RULES, anchor/rules.json (the Python oracle's copy) and DECKS equal it; the round engine, the payout evaluator and Step 11 import it",
+      "profileIds": [
+        "BLACKJACK-26",
+        "BLACKJACK-27"
+      ],
+      "profileChecks": [
+        {
+          "id": "BLACKJACK-26",
+          "coverage": "full",
+          "note": "the dataset SHA-256 guard aborts before any step (src/loader.ts) and is restated here; the RULE SET is single-sourced as src/config.ts RULES (11 rules) — the exact solver's LIQD_RULES, the round engine, the payout evaluator and Step 11's draw rule read it, the Python oracle reads anchor/rules.json, and Step 25 requires LIQD_RULES, anchor/rules.json and DECKS to equal it field for field; the side-bet paytables are single-sourced in src/config.ts, and the dataset's own config block (meta.payout — 3:2, 2:1, all eight paytable entries — and meta.decks) is scored against them: 11/11 agree. FAIL probed: anchor/rules.json S17 flipped, the solver's DAS restated as false (R71, R72)"
+        },
+        {
+          "id": "BLACKJACK-27",
+          "coverage": "full",
+          "note": "ten artifacts pinned in src/config.ts, present and matching — since 2026-09-24 including outputs/deep-replay-report.json and outputs/bootstrap-replay-report.json, which no longer carry generatedAt/seconds; outputs/report-figures.json re-derived field for field; all un-ignored by name; every numeric leaf of the nine JSON artifacts of record (32,848 leaves) sits on a path with a declared value domain in src/domains.ts, bounds taken from src/config.ts, and inside it; no run-metadata key in any of them; verify and simulate write only outputs/run/; the chart is inline SVG with no script. FAIL probed: an impossible p-value re-pinned, a seconds field added to a replay report and re-pinned (R73, R74)"
+        }
+      ]
+    },
+    {
+      "step": 26,
+      "name": "Phase D Client-Seed Variation",
+      "status": "PASS",
+      "detail": "500/500 Phase D hands recompute under 10 distinct auditor client seeds — 0 mismatch; 490/500 deal a different first card under a canonical baseline seed (client seed genuinely feeds the derivation). DISCLOSED — predictable Phase D seeds: 10 of the 10 Phase D epochs use pfaudit-<stamp>-<epoch> — epochs 96–105 (96, 97, 98, 99, 100, 101, 102, 103, 104, 105), 500 rounds, stamp(s) 1785954682036 (2026-08-05T18:31:22.036Z); for those epochs the rounds rest on the recomputation, not on the client-seed-after-commitment mitigation (MANIFEST DL-15)",
+      "profileIds": [
+        "BLACKJACK-06"
+      ],
+      "profileChecks": [
+        {
+          "id": "BLACKJACK-06",
+          "coverage": "full",
+          "note": "the Phase D half: 500/500 Phase D rounds recompute under the 10 player-set seeds actually used (≥ 2 distinct required), 490/500 deal a different first card under a baseline seed, and the predictable construction pfaudit-<stamp>-<epoch> is enumerated from the data — epochs 96–105, one stamp 1785954682036 — as MANIFEST DL-15. The wrong-seed sample and the generator clause are Step 7"
+        }
+      ]
+    },
+    {
+      "step": 27,
+      "name": "Split Rules Verification",
+      "status": "PASS",
+      "detail": "401 split rounds: 0 value-mismatched pairs (value-based split rule), 35 ace splits — 0 that did not draw exactly one card each (splitAcesOneCard), 0 rounds with >2 player hands. No re-split was observed: the capture never requests a second split and records two hands at most, so \"no re-split\" is ASSUMED of the rule set rather than demonstrated. Coverage floors: splits 401 (floor 200), ace splits 35 (floor 20), DAS 165 (floor 100), doubles 1448 (floor 500), insurance records on a dealer Ace 446 (floor 100) — all met. Rule table — OBSERVED: S17 (108 dealer hands stood on soft 17; draw rule replayed both ways in Step 11), DAS (165 rounds), dealer peek (283 dealer naturals settled before player action, Step 13), split pairing by value (401 splits, 0 off-value), split aces one card (35), double on any two (initial totals 5–20 observed), insurance 2:1 on a dealer Ace (446 insurance records, Steps 10 and 28), 8-deck shoe (Step 30), naturals 3:2 (Step 9); ASSUMED (never attempted by the capture): re-split (0 third hands in 401 splits; the capture never requests a second split), surrender (0 surrender tokens; the capture script has no surrender call) — MANIFEST DL-5 — and insurance can be declined (the capture never sent LIQD's decline request, {acceptInsurance: false}; the casino booked insurance on every offer it did send — MANIFEST DL-17). Uncaptured, voided or aborted games are counted as nonce gaps by Step 4 against the declared 0",
+      "profileIds": [
+        "BLACKJACK-15"
+      ],
+      "profileChecks": [
+        {
+          "id": "BLACKJACK-15",
+          "coverage": "full",
+          "note": "the rule-and-coverage check is carried by Step 27 (coverage floors asserted as floors — splits 401/200, ace splits 35/20, DAS 165/100, doubles 1,448/500, insurance records on a dealer Ace 446/100, a shortfall FLAGs — and the rule table: nine rules OBSERVED with witness counts, three ASSUMED: re-split and surrender (MANIFEST DL-5) and insurance can be declined (MANIFEST DL-17)), 12 (DAS from the token stream), 14 (0 surrender tokens; the capture script has no surrender call), 28 (insurance records only on a dealer Ace, one per capture insurance request) and 31 (every round staked at its phase's planned stake); uncaptured/voided games are Step 4's gap count (0 against 0 declared)"
+        }
+      ]
+    },
+    {
+      "step": 28,
+      "name": "Insurance Offer Condition",
+      "status": "PASS",
+      "detail": "446 insurance records, all on a dealer Ace upcard — 0 on a non-Ace upcard. CAPTURE ORIGIN (MANIFEST DL-17; disclosed, verdict-neutral): the capture sent its decline request (no-ins, place-insurance-bet {betAmount: 0}) on 446 offers and a funded insurance record came back on 446 of them; LIQD's own UI declines with {acceptInsurance: false} (E24), which the capture never sent, so the capture's rounds carry insurance on every offer. Coverage: 0 no-ins round(s) without an insurance record, 0 insurance record(s) without a no-ins token. Insurance on every offer, by exact enumeration of the deal over the 416-card shoe (offered on a dealer Ace without a player natural, as on this capture; 7.3370% of rounds): -0.273538% per initial bet (-504649/184489578), so the capture's rounds carried a house edge of 0.761213% per initial bet (RTP 99.238787%) against the basic-strategy 0.487675%, which assumes insurance is declined",
+      "profileIds": [
+        "BLACKJACK-15"
+      ],
+      "profileChecks": [
+        {
+          "id": "BLACKJACK-15",
+          "coverage": "full",
+          "note": "the rule-and-coverage check is carried by Step 27 (coverage floors asserted as floors — splits 401/200, ace splits 35/20, DAS 165/100, doubles 1,448/500, insurance records on a dealer Ace 446/100, a shortfall FLAGs — and the rule table: nine rules OBSERVED with witness counts, three ASSUMED: re-split and surrender (MANIFEST DL-5) and insurance can be declined (MANIFEST DL-17)), 12 (DAS from the token stream), 14 (0 surrender tokens; the capture script has no surrender call), 28 (insurance records only on a dealer Ace, one per capture insurance request) and 31 (every round staked at its phase's planned stake); uncaptured/voided games are Step 4's gap count (0 against 0 declared)"
+        }
+      ]
+    },
+    {
+      "step": 29,
+      "name": "Side-Bet Deal-Time Invariance",
+      "status": "PASS",
+      "detail": "11600/11600 side-bet card snapshots (Perfect Pairs + 21+3) all equal the player's initial two dealt cards — 0 mismatch",
+      "profileIds": [
+        "BLACKJACK-14"
+      ],
+      "profileChecks": [
+        {
+          "id": "BLACKJACK-14",
+          "coverage": "full",
+          "note": "the side-bet check is carried by Steps 15 and 16 (5,800 + 5,800 bets re-derived from the split-aware initial snapshot, category and exact payout = stake × (paytable + 1), each side stake 1× the main stake), 23 (every paytable category exercised: 3/3 Perfect Pairs, 5/5 21+3) and 29 (11,600 snapshots equal the initial deal — invariant to later play). No forfeit-on-split exists at LIQD: split rounds settle both side bets on the original pair (Step 15/16 score them with the rest)"
+        }
+      ]
+    },
+    {
+      "step": 30,
+      "name": "Deck-Model Confirmation",
+      "status": "PASS",
+      "detail": "1269/6000 rounds contain an exact-duplicate card (refutes single-deck); max copies of any exact card within a round = 3 (within the 8-deck bound). Live-sample fit over the 6000 captured rounds: first-card rank counts [461, 432, 441, 475, 452, 440, 425, 460, 468, 477, 481, 489, 499] (A…K) against 461.54 each — χ² = 13.401, df 12 (pinned), p = 0.3406 (threshold ≥ 0.01); player naturals 253/6000 and dealer naturals 283/6000 against the 8-deck probability 4.7451% (expected 284.7) — z = -1.93 and -0.10 (threshold |z| ≤ 3). The live money path is a reconciliation, not RTP (outputs/report-figures.json moneyPath; informational block)",
+      "profileIds": [
+        "BLACKJACK-17",
+        "BLACKJACK-22"
+      ],
+      "profileChecks": [
+        {
+          "id": "BLACKJACK-17",
+          "coverage": "full",
+          "note": "the finite 8-deck shoe is confirmed from the data (1,269/6,000 rounds carry an exact duplicate card, never more than 3 copies — within the 8-copy bound). The hole-card, mid-round rotation and hidden-state items are declared, not probed: MANIFEST DL-9 (mid-round rotation never driven) and DL-10 (pre-settlement sweep not performed), each with its closing production item"
+        },
+        {
+          "id": "BLACKJACK-22",
+          "coverage": "full",
+          "note": "scored, informational (policy INFORMATIONAL, decided 2026-09-29: a misfit is INFO — reported, never counted, verdict unchanged): the 6,000 captured first cards fit the uniform rank distribution (χ² 13.401, df 12 pinned, p = 0.3406, threshold 0.01) and the player- and dealer-natural frequencies fit the 8-deck probability 4.7451 % (253 and 283 of 6,000, z −1.93 and −0.10, threshold |z| ≤ 3); the live money path is reported as a reconciliation (informational block, report-figures.json moneyPath), never as RTP"
+        }
+      ]
+    },
+    {
+      "step": 31,
+      "name": "Stake Bracket Bounds",
+      "status": "PASS",
+      "detail": "observed stakes $0.1, $10 — all within the brackets the capture plan declares in src/config.ts PHASE_PLAN ($0.1, $10); 6000/6000 rounds staked every hand at their own phase's planned stake",
+      "profileIds": [
+        "BLACKJACK-05",
+        "BLACKJACK-15"
+      ],
+      "profileChecks": [
+        {
+          "id": "BLACKJACK-05",
+          "coverage": "full",
+          "note": "the stakes half: every hand of every round is staked at its own phase's planned stake in src/config.ts PHASE_PLAN ($0.10, and $10 for Phase E) — 6,000/6,000"
+        },
+        {
+          "id": "BLACKJACK-15",
+          "coverage": "full",
+          "note": "the rule-and-coverage check is carried by Step 27 (coverage floors asserted as floors — splits 401/200, ace splits 35/20, DAS 165/100, doubles 1,448/500, insurance records on a dealer Ace 446/100, a shortfall FLAGs — and the rule table: nine rules OBSERVED with witness counts, three ASSUMED: re-split and surrender (MANIFEST DL-5) and insurance can be declined (MANIFEST DL-17)), 12 (DAS from the token stream), 14 (0 surrender tokens; the capture script has no surrender call), 28 (insurance records only on a dealer Ace, one per capture insurance request) and 31 (every round staked at its phase's planned stake); uncaptured/voided games are Step 4's gap count (0 against 0 declared)"
+        }
+      ]
+    }
+  ],
+  "profileCoverage": {
+    "game": "blackjack",
+    "profileVersion": "1.0.2",
+    "notApplicable": [
+      {
+        "id": "BLACKJACK-16",
+        "reason": "applies={path: money.balanceField, notNull: true} is false — the capture has no balance field to reconcile against (0 occurrences of a balance or delta key in data/blackjack-6000hands.json), so the stake side of the money path is unobservable: MANIFEST DL-4. What IS verified is the credit side, exactly (Step 8), which the profile does not count as a balance ledger"
+      }
+    ],
+    "packageChecks": [
+      {
+        "id": "BLACKJACK-09",
+        "artifact": "docs/ALGORITHM.md + tests/blackjack/rngSpecTests.ts + tests/blackjack/rngTests.ts",
+        "coverage": "partial",
+        "note": "PARTIAL. REWRITTEN 2026-10-20: src/rng.ts is rebuilt from a written specification, docs/ALGORITHM.md (framework games/liqd-blackjack/ALGORITHM.md), by an implementer who never opened LIQD's code; it ports nothing, so it cites no operator line, and docs/ALGORITHM.md §4 names the source of every step instead (LIQD's pages, the standard construction, or the 6,000 live rounds). Before 2026-10-20 src/rng.ts was an adapter matched to the RNG specification LIQD supplied privately and cited it generically. LIQD's code is not public, so no unit test here executes it: what IS here is tests/blackjack/rngSpecTests.ts (the spec's five worked rounds and properties), unit tests reproducing a real captured shoe and its PDPD deal from the revealed seed, and the operator's own validation vectors from its specification (the nonce-9 34-card shoe prefix and two draw vectors), run as a second check against src/rng.ts"
+      },
+      {
+        "id": "BLACKJACK-23",
+        "artifact": "MANIFEST.md#verification-results",
+        "coverage": "full",
+        "note": "the standardized matrix BJ-S5-01 … 18, each row Pass / Not closed / Not tested — disclosed and tied to a scored step or a limitation row (BJ-S5-05 cherry-picking Not closed, DL-1; BJ-S5-18 mid-round rotation Not tested, DL-9)"
+      },
+      {
+        "id": "BLACKJACK-25",
+        "artifact": "MANIFEST.md#verify-a-bet",
+        "coverage": "full",
+        "note": "MANIFEST \"Verify a bet\" carries the player path in the profile's order and in the dataset's field names: where the seed is revealed (rotation), which fields to take, the commitment encoding (SHA-256 of the serverSeed hex STRING as UTF-8), the draw and the backward Fisher-Yates, the PDPD deal and the split draw order; a node:crypto script performs it"
+      },
+      {
+        "id": "BLACKJACK-28",
+        "artifact": "package.json (npm test, test:full, engines 22.x) + .nvmrc + scripts/check-standalone.mjs + verify.js / test.js + src/diff.ts → outputs/run/diff.json + src/simulate.ts → outputs/run/simulation-diff.json",
+        "coverage": "full",
+        "note": "zero-install on a fresh clone: `npm test` is check-standalone && node test.js && node verify.js && release-manifest --check; verify writes only outputs/run/ with a field-level diff at 1e-14 + 1e-12·max (exit 1 beyond it); `npm run test:full` regenerates the simulation from the pinned master seed into outputs/run/ and diffs it (simulation-diff.json, runtime recorded); FLAG exits 2 (capture-origin FLAGs are verdict-neutral); runtime pinned (engines 22.x, .nvmrc); audit ID PF-2026-LQ01 emitted in the record; check-standalone.mjs fails unless MANIFEST.md carries that ID and the unit-spec and scored-step counts quoted in MANIFEST.md/README.md equal the suite's own"
+      },
+      {
+        "id": "BLACKJACK-29",
+        "artifact": "tests/mutations.json + tests/mutate.ts",
+        "coverage": "full",
+        "note": "a step-named registry run in a disposable copy (node_modules symlinked, the working tree never touched), every entry naming the marker that must fire; since 2026-09-24 every scored step 1–31 has at least one mutation that kills it. Forged-evidence batteries included: relabelled result (won→lost), shrunken dataset (R13, R16), hand-written simulation block (R17–R20), downgraded 3:2 (R10, R36, R37), off-grid perturbation (R11), the 301 losing insurance records deleted (R80). No declared survivors"
+      },
+      {
+        "id": "BLACKJACK-30",
+        "artifact": "MANIFEST.md#limitations-and-trust (Declared limitations register DL-1–DL-19, Premises, Model anchors) + MANIFEST.md#evidence E01–E24",
+        "coverage": "full",
+        "note": "DL-1–DL-19 each carry a measured magnitude and what closes it; DL-15 enumerates the predictable Phase D epochs, DL-16 the circumstantial provenance of the A–C generator, DL-17 the capture's insurance request (not the UI's decline; insurance booked on all 446 offers), DL-18 the capture's split-round play, DL-19 the profit cap and Face-Down Double, neither exercised; the premises table marks unwitnessed premises ASSUMED; MANIFEST Evidence numbers E01–E24 with an evidential role each"
+      }
+    ]
+  },
+  "info": [
+    {
+      "label": "Money-path reconciliation (all wagers incl. side bets + insurance)",
+      "detail": "4152.60 wagered + 86.65 insurance, 4155.35 returned = 98.0209% over 6000 hands — RECONCILIATION ONLY, not an RTP estimate (n=6,000 has ~±6pp money-weighted power)"
+    },
+    {
+      "label": "Money-path reconciliation (excl. insurance)",
+      "detail": "98.4696% — insurance (86.65 wagered, 66.30 returned) was booked by the casino on every offer in response to the capture's decline request (no-ins, place-insurance-bet {betAmount: 0}), which is not the request LIQD's UI sends — MANIFEST DL-17"
+    },
+    {
+      "label": "Player natural blackjacks",
+      "detail": "253/6000 = 4.22% (8-deck expectation ≈ 4.75%)"
+    }
+  ]
+}

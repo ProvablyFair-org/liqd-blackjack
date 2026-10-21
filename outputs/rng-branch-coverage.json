@@ -1,0 +1,26 @@
+{
+  "audit": "LIQD Blackjack",
+  "what": "Branch coverage of src/rng.ts generateProvablyFairNumber over the committed capture",
+  "method": "Every draw of every captured hand (6000 shoes x 415 draws) replayed through an instrumented mirror of the draw primitive, counting which of its three paths each draw took. The analytic block states the closed-form expectation over the same population of ranges (a backward Fisher-Yates over 416 cards consumes range = 2..416 once per shoe).",
+  "observed": {
+    "shoes": 6000,
+    "drawsTotal": 2490000,
+    "firstChunkAccept": 2490000,
+    "laterChunkAccept": 0,
+    "cursorAdvanceFallback": 0,
+    "individualChunkRejections": 0
+  },
+  "analytic": {
+    "expectedLaterChunkDrawsOverCapture": 0.05687400698661804,
+    "probabilityNoRejectionAnywhereInCapture": 0.9447130879660834,
+    "expectedCursorAdvanceEventsOverCapture": 2.03623161404044e-52
+  },
+  "exposureIfRejectionOmitted": {
+    "note": "Upper bounds on how far a plain `chunk % range` (no rejection) could deviate from a uniform draw, over the 415 ranges a shoe consumes. Both are per draw.",
+    "maxAbsPointBias": 2.319246877879877e-10,
+    "maxAbsPointBiasAtRange": 257,
+    "maxTotalVariationDistance": 2.3779168397807665e-8,
+    "maxTotalVariationDistanceAtRange": 413
+  },
+  "conclusion": "The modulo-bias rejection branch is unexercised by this capture: a server implementing a plain `chunk % range` would have produced byte-identical data with the probability recorded above. The card-for-card reproduction evidences the accept path only; rejection is ASSUMED of the server."
+}

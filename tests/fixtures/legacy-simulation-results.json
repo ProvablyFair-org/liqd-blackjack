@@ -1,0 +1,1199 @@
+{
+  "audit": "LIQD Blackjack",
+  "generatedAt": "2026-09-02T19:05:06.913Z",
+  "algorithm": "HMAC-SHA256 (key = hex-decoded serverSeed); backward in-place Fisher-Yates over 416 cards; deal PDPD; optimal basic strategy S17/DAS/SPA1/no-resplit/dealer-peek; blackjack 3:2",
+  "baseGame": {
+    "rtp": 0.9951141166666667,
+    "edge": 0.004885883333333334,
+    "rtpInitial": 0.9951141166666667,
+    "edgeInitial": 0.004885883333333334,
+    "rtpPerTotalWagered": 0.995667659776964,
+    "edgePerTotalWagered": 0.004332340223036021,
+    "avgWager": 1.12777,
+    "rounds": 30000000,
+    "standardError": 0.00020996031371031364,
+    "sdPerRound": 1.146718922176392,
+    "sdPerRoundNote": "Measured per-round SD of the per-initial-bet loss. standardError/gate use the constant 1.15 (this value rounded up).",
+    "convergence": [
+      {
+        "rounds": 1000,
+        "rtp": 0.991,
+        "se": 0.03636619309193636
+      },
+      {
+        "rounds": 3000,
+        "rtp": 0.9961666666666666,
+        "se": 0.020996031371031364
+      },
+      {
+        "rounds": 10000,
+        "rtp": 0.99195,
+        "se": 0.0115
+      },
+      {
+        "rounds": 30000,
+        "rtp": 0.9971833333333333,
+        "se": 0.006639528095680696
+      },
+      {
+        "rounds": 100000,
+        "rtp": 0.994095,
+        "se": 0.0036366193091936358
+      },
+      {
+        "rounds": 300000,
+        "rtp": 0.9961383333333333,
+        "se": 0.0020996031371031364
+      },
+      {
+        "rounds": 1000000,
+        "rtp": 0.995364,
+        "se": 0.00115
+      },
+      {
+        "rounds": 3000000,
+        "rtp": 0.995395,
+        "se": 0.0006639528095680696
+      },
+      {
+        "rounds": 10000000,
+        "rtp": 0.9957592,
+        "se": 0.00036366193091936355
+      },
+      {
+        "rounds": 30000000,
+        "rtp": 0.9951141166666667,
+        "se": 0.00020996031371031364
+      }
+    ],
+    "method": "Fair-shuffle consistency simulation for the declared rules and strategy. Fresh-run estimates vary with Monte Carlo sampling error. Results use per-initial-bet and per-total-wager conventions; the verifier compares the estimates with the exact finite eight-deck model. Pass 1 separately checks first-card rank uniformity and the specified serial statistics of blackjackShoe.",
+    "note": "Finite 8-deck RTP under optimal basic strategy (S17/DAS/SPA1/no-resplit/peek, blackjack 3:2). Per initial bet the finite figure sits just above the analytical infinite-deck limit, as card removal predicts."
+  },
+  "realShoeConsistency": {
+    "rtp": 0.997429,
+    "edge": 0.002571,
+    "rtpPerTotalWagered": 0.9977198107735615,
+    "rounds": 500000,
+    "standardError": 0.0016263455967290591,
+    "deviationSigma": 1.4233649588310369,
+    "playerBJFreq": 0.047628,
+    "dealerBJFreq": 0.047774,
+    "note": "RTP (per initial bet) over the actual blackjackShoe RNG algorithm — a consistency check. Fewer rounds (the real shoe is HMAC-hashed per card), so the Monte-Carlo error is wide here; baseGame is the fair-shuffle consistency estimate and the analytical engine is the deterministic anchor."
+  },
+  "exactFiguresSource": "outputs/exact-rtp.json (regenerate with `npm run rtp`) — deterministic exact 8-deck EV of record: finite-8 TD headline (anchored to the tiny-shoe oracle + Wizard of Odds), finite-8 CD is a demoted internal diagnostic (cdPeekIsApproximate, never published), finite-1 deck-sensitivity, infinite-deck regression value, card-removal lift, WoO anchor.",
+  "analyticalInfiniteDeck": 0.994296119877263,
+  "analyticalInfiniteDeckEdge": 0.005703880122737037,
+  "cardRemovalLiftPP": 0.08271318994897969,
+  "pass1_fresh_seeds": {
+    "description": "One freshly generated server/client seed pair drives a 500,000-nonce stream of the reference blackjackShoe algorithm. The retained results cover first-card rank uniformity (df=12), lag-1 correlation and the runs test. These are specified statistical checks; the finite eight-deck RTP is evaluated separately by the deterministic model and a simulation consistency check.",
+    "rounds": 500000,
+    "firstCardChi2": 9.514263999999999,
+    "firstCardDf": 12,
+    "firstCardPValue": 0.6584903353498054,
+    "serialR1": 0.0019370587263448362,
+    "serialR1Z": 1.3697073609550106,
+    "serialRunsZ": -0.23749697219479843,
+    "serialRunsPValue": 0.812271365774238,
+    "firstCardUniformFail": false,
+    "serialFail": false
+  },
+  "pass2_casino_seeds": {
+    "description": "Casino seeds (revealed serverSeeds). Cherry-pick test on first-card rank uniformity over the 0..49 served window vs a parametric bootstrap null. Gross-bias check only; the primary cherry-pick defence is the client-seed-after-commitment mitigation (see AUDIT_CONTEXT.md#seed-selection-and-server-operations).",
+    "noncesPerSeed": 1000,
+    "earlyWindow": [
+      0,
+      49
+    ],
+    "lateWindow": [
+      50,
+      999
+    ],
+    "bootstrapReps": 2000,
+    "seeds_tested": 120,
+    "cherryPickFlags": 5,
+    "expectedFlagsByChance": 5.699999999999999,
+    "cherryPickSurvivalP": 0.6788813797720822,
+    "results": [
+      {
+        "epoch": 0,
+        "hashedServerSeed": "948eff896b5521c1064402dcd5557342210e03e0c4e864d0b83418bfb5e12f42",
+        "earlyChi2": 6.03,
+        "earlyBootstrapP": 0.8325837081459271,
+        "lateChi2": 8.934736842105263,
+        "latePValue": 0.7084944471544968,
+        "cherryPickFlag": false
+      },
+      {
+        "epoch": 1,
+        "hashedServerSeed": "5112cebbec8745b056100e4cb9234a70fab55dc54c3b3b6a0573a74c071e1d43",
+        "earlyChi2": 5.8999999999999995,
+        "earlyBootstrapP": 0.8435782108945528,
+        "lateChi2": 15.50315789473684,
+        "latePValue": 0.2150660899683483,
+        "cherryPickFlag": false
+      },
+      {
+        "epoch": 2,
+        "hashedServerSeed": "9e7871e9e10b395a061d187faaab96c7d2f7516d3699b525fc956f513bfbbd73",
+        "earlyChi2": 13.830000000000004,
+        "earlyBootstrapP": 0.18290854572713644,
+        "lateChi2": 13.368421052631579,
+        "latePValue": 0.34284051546128114,
+        "cherryPickFlag": false
+      },
+      {
+        "epoch": 3,
+        "hashedServerSeed": "a5dd969e1a8cb2e87dc84f2067cb042a9501a570b840ecb5636f84ffc562574a",
+        "earlyChi2": 11.1,
+        "earlyBootstrapP": 0.3523238380809595,
+        "lateChi2": 8.223157894736843,
+        "latePValue": 0.7674572038280058,
+        "cherryPickFlag": false
+      },
+      {
+        "epoch": 4,
+        "hashedServerSeed": "f11e19d58373b3d8a583409ffc99d9e251c2556e873a38fff493ec349bbf5f86",
+        "earlyChi2": 7.459999999999999,
+        "earlyBootstrapP": 0.7186406796601699,
+        "lateChi2": 13.368421052631579,
+        "latePValue": 0.34284051546128114,
+        "cherryPickFlag": false
+      },
+      {
+        "epoch": 5,
+        "hashedServerSeed": "6c39d30ae34a2e4105dcfd0b19788629f5f6ef7b52893ba9044786d23f4c7296",
+        "earlyChi2": 20.59,
+        "earlyBootstrapP": 0.02798600699650175,
+        "lateChi2": 10.877894736842103,
+        "latePValue": 0.5394111583378465,
+        "cherryPickFlag": true
+      },
+      {
+        "epoch": 6,
+        "hashedServerSeed": "3de4f77ede381e0904fdd35e8a911920cc28ba84c883035b874babed98ec84d0",
+        "earlyChi2": 13.829999999999998,
+        "earlyBootstrapP": 0.191904047976012,
+        "lateChi2": 18.212631578947367,
+        "latePValue": 0.10938517377390722,
+        "cherryPickFlag": false
+      },
+      {
+        "epoch": 7,
+        "hashedServerSeed": "54b92801fe50cabcc7af8c4a02048a5eee6c4083b34c5c9a7aeae9947362a0d1",
+        "earlyChi2": 10.06,
+        "earlyBootstrapP": 0.44427786106946526,
+        "lateChi2": 9.098947368421053,
+        "latePValue": 0.6944565791509114,
+        "cherryPickFlag": false
+      },
+      {
+        "epoch": 8,
+        "hashedServerSeed": "754f046b1e83fda0994b7226d20873af8809bcea0e810ec7f88643e13ddb23d2",
+        "earlyChi2": 19.549999999999997,
+        "earlyBootstrapP": 0.037481259370314844,
+        "lateChi2": 16.78947368421052,
+        "latePValue": 0.15768968834202668,
+        "cherryPickFlag": true
+      },
+      {
+        "epoch": 9,
+        "hashedServerSeed": "838fb3e9f0e73d5f30da7f85e6df4dcaa97acd779d72920a99838643008d74dd",
+        "earlyChi2": 9.280000000000001,
+        "earlyBootstrapP": 0.5062468765617192,
+        "lateChi2": 31.787368421052633,
+        "latePValue": 0.0014922418327989462,
+        "cherryPickFlag": false
+      },
+      {
+        "epoch": 10,
+        "hashedServerSeed": "5ce41cbb8bbd822f1b20575ec47919fa242267900604c21e53abbe2eb3009cb7",
+        "earlyChi2": 10.71,
+        "earlyBootstrapP": 0.375312343828086,
+        "lateChi2": 11.014736842105265,
+        "latePValue": 0.5276561589074724,
+        "cherryPickFlag": false
+      },
+      {
+        "epoch": 11,
+        "hashedServerSeed": "41f186b9c02ce992e6d7c3a68f433046b1372c40ebad7f418281cba2e156e7a3",
+        "earlyChi2": 6.03,
+        "earlyBootstrapP": 0.8325837081459271,
+        "lateChi2": 23.056842105263158,
+        "latePValue": 0.02724722858191775,
+        "cherryPickFlag": false
+      },
+      {
+        "epoch": 12,
+        "hashedServerSeed": "8f668b432453262c6ce3cf1aee4feede101f090f19606d31e527cbbab075454d",
+        "earlyChi2": 11.879999999999999,
+        "earlyBootstrapP": 0.2928535732133933,
+        "lateChi2": 9.865263157894736,
+        "latePValue": 0.6277798142660383,
+        "cherryPickFlag": false
+      },
+      {
+        "epoch": 13,
+        "hashedServerSeed": "0dafa6145786c84c8ad18f5230ad0893d0e4ba3c2f1f035d4b285d157c94a9e3",
+        "earlyChi2": 12.14,
+        "earlyBootstrapP": 0.2848575712143928,
+        "lateChi2": 18.157894736842106,
+        "latePValue": 0.1109797257287034,
+        "cherryPickFlag": false
+      },
+      {
+        "epoch": 14,
+        "hashedServerSeed": "6f66d3782b00b2cf5d2b0d734eed3d5dec2bab70328aa26ace15936d73aa7497",
+        "earlyChi2": 11.88,
+        "earlyBootstrapP": 0.29185407296351823,
+        "lateChi2": 6.9915789473684224,
+        "latePValue": 0.8581695499898423,
+        "cherryPickFlag": false
+      },
+      {
+        "epoch": 15,
+        "hashedServerSeed": "f9129d6569191eb2cca049c0d64bd91e481ad0f8eeba8da8b872ef6c251f5697",
+        "earlyChi2": 4.340000000000001,
+        "earlyBootstrapP": 0.9325337331334332,
+        "lateChi2": 15.941052631578946,
+        "latePValue": 0.19395090423212402,
+        "cherryPickFlag": false
+      },
+      {
+        "epoch": 16,
+        "hashedServerSeed": "f8ff2945e82822fe35714698b3ac5806faf15c508a99ad687966991435bd8a38",
+        "earlyChi2": 12.399999999999997,
+        "earlyBootstrapP": 0.2588705647176412,
+        "lateChi2": 8.852631578947367,
+        "latePValue": 0.715463472981631,
+        "cherryPickFlag": false
+      },
+      {
+        "epoch": 17,
+        "hashedServerSeed": "62516b54607d363e5f66fe162dbcbf4cbfdbd74ad554a1ca1d156d408871e026",
+        "earlyChi2": 10.84,
+        "earlyBootstrapP": 0.36281859070464767,
+        "lateChi2": 11.644210526315788,
+        "latePValue": 0.47465975551368733,
+        "cherryPickFlag": false
+      },
+      {
+        "epoch": 18,
+        "hashedServerSeed": "73fdbaee7e0c27be83645b0d732405aa73dccbc09d6750a38e279e50d8f5089c",
+        "earlyChi2": 14.739999999999998,
+        "earlyBootstrapP": 0.15442278860569716,
+        "lateChi2": 17.17263157894737,
+        "latePValue": 0.14321807228965777,
+        "cherryPickFlag": false
+      },
+      {
+        "epoch": 19,
+        "hashedServerSeed": "37d0763bf0594d8cf97b3df31baca7674e2db1cb0c30f85f42a41636748eb0f1",
+        "earlyChi2": 5.9,
+        "earlyBootstrapP": 0.841079460269865,
+        "lateChi2": 10.357894736842105,
+        "latePValue": 0.5845941285683177,
+        "cherryPickFlag": false
+      },
+      {
+        "epoch": 20,
+        "hashedServerSeed": "200124157f9d51189109d8e64bcd4952ce1b1637178ea2b1243651acf43907b8",
+        "earlyChi2": 7.720000000000001,
+        "earlyBootstrapP": 0.670664667666167,
+        "lateChi2": 19.58105263157895,
+        "latePValue": 0.07543777122405737,
+        "cherryPickFlag": false
+      },
+      {
+        "epoch": 21,
+        "hashedServerSeed": "199fd1d2fa45a48f5ff7d0edfd37177c6fee7918259bb01b19f7d56d2c0f4169",
+        "earlyChi2": 5.51,
+        "earlyBootstrapP": 0.8650674662668666,
+        "lateChi2": 24.452631578947365,
+        "latePValue": 0.017640612526776067,
+        "cherryPickFlag": false
+      },
+      {
+        "epoch": 22,
+        "hashedServerSeed": "1be184b5e4a4c14e4c41de78ef943fd3fa277e8bc1c2b0e79e2fd788680dd43b",
+        "earlyChi2": 6.679999999999998,
+        "earlyBootstrapP": 0.7806096951524237,
+        "lateChi2": 7.922105263157896,
+        "latePValue": 0.7911875867631828,
+        "cherryPickFlag": false
+      },
+      {
+        "epoch": 23,
+        "hashedServerSeed": "6422a380ae080ef04ce185dbb5f2667da3ebbd0d64ee665583efab37b3e8e541",
+        "earlyChi2": 11.23,
+        "earlyBootstrapP": 0.34182908545727136,
+        "lateChi2": 21.907368421052634,
+        "latePValue": 0.03857120170938377,
+        "cherryPickFlag": false
+      },
+      {
+        "epoch": 24,
+        "hashedServerSeed": "0a27d971dac6e22a5c7de0328a7a3798c480840c69c4d8bbc7738ff03086ab14",
+        "earlyChi2": 8.11,
+        "earlyBootstrapP": 0.6526736631684158,
+        "lateChi2": 15.202105263157893,
+        "latePValue": 0.23056955593519257,
+        "cherryPickFlag": false
+      },
+      {
+        "epoch": 25,
+        "hashedServerSeed": "2f06e6c5c52974d0bbc80fe1ea0b2451a042ca60854fea16e233503ad525eaf3",
+        "earlyChi2": 11.23,
+        "earlyBootstrapP": 0.34182908545727136,
+        "lateChi2": 16.16,
+        "latePValue": 0.18401719660384286,
+        "cherryPickFlag": false
+      },
+      {
+        "epoch": 26,
+        "hashedServerSeed": "6b3a1522fa168ca3e7ddcaa1e4823a8424633c0435643bcc000291cc97d0f6b1",
+        "earlyChi2": 15.52,
+        "earlyBootstrapP": 0.12643678160919541,
+        "lateChi2": 7.566315789473686,
+        "latePValue": 0.8180374034757972,
+        "cherryPickFlag": false
+      },
+      {
+        "epoch": 27,
+        "hashedServerSeed": "f918584d7e905acdfd9a6c005368e819891f706f84b443d6cfe7d4cb4d141545",
+        "earlyChi2": 14.739999999999998,
+        "earlyBootstrapP": 0.15442278860569716,
+        "lateChi2": 7.894736842105264,
+        "latePValue": 0.7933012937452222,
+        "cherryPickFlag": false
+      },
+      {
+        "epoch": 28,
+        "hashedServerSeed": "dfc83694af6b07341c09eed2332634bb28c9fae4b1700da47854c7be96abba47",
+        "earlyChi2": 8.629999999999999,
+        "earlyBootstrapP": 0.592703648175912,
+        "lateChi2": 8.442105263157895,
+        "latePValue": 0.749697829066009,
+        "cherryPickFlag": false
+      },
+      {
+        "epoch": 29,
+        "hashedServerSeed": "0fad61276161250dbd30530b5c89b71834376eb29ef284c71b93412835108d5c",
+        "earlyChi2": 15.909999999999998,
+        "earlyBootstrapP": 0.11894052973513243,
+        "lateChi2": 15.421052631578947,
+        "latePValue": 0.21921372622622481,
+        "cherryPickFlag": false
+      },
+      {
+        "epoch": 30,
+        "hashedServerSeed": "e25f3492f5f6f70075c8a7e3cab042c6184bef0587538e9a632e9e98653780c5",
+        "earlyChi2": 10.71,
+        "earlyBootstrapP": 0.375312343828086,
+        "lateChi2": 17.063157894736843,
+        "latePValue": 0.1472369272392906,
+        "cherryPickFlag": false
+      },
+      {
+        "epoch": 31,
+        "hashedServerSeed": "23bab476de4769b7cbb421618b26ac3bb3b48619bfdf5d9cd1596b1eaa1c7374",
+        "earlyChi2": 9.15,
+        "earlyBootstrapP": 0.5337331334332833,
+        "lateChi2": 11.534736842105263,
+        "latePValue": 0.48373039266723394,
+        "cherryPickFlag": false
+      },
+      {
+        "epoch": 32,
+        "hashedServerSeed": "d8b2a83c9f67dfb84aaa026e0dfe03b0cb940ba0f3d8e17b9006f147b2269415",
+        "earlyChi2": 20.59,
+        "earlyBootstrapP": 0.02798600699650175,
+        "lateChi2": 13.505263157894737,
+        "latePValue": 0.3334093022327177,
+        "cherryPickFlag": true
+      },
+      {
+        "epoch": 33,
+        "hashedServerSeed": "4b522d5cb3eb63c67fa80958f67b8f12f4b222963632a95a1fe7b22afbdb20f8",
+        "earlyChi2": 14.870000000000001,
+        "earlyBootstrapP": 0.1469265367316342,
+        "lateChi2": 8.770526315789475,
+        "latePValue": 0.7223955136658755,
+        "cherryPickFlag": false
+      },
+      {
+        "epoch": 34,
+        "hashedServerSeed": "30db6b20833dd2f985c9807517500f7edc3ee2ca7a3d5fff159579b4ee69a481",
+        "earlyChi2": 11.750000000000002,
+        "earlyBootstrapP": 0.29685157421289354,
+        "lateChi2": 12.109473684210526,
+        "latePValue": 0.4369282228806889,
+        "cherryPickFlag": false
+      },
+      {
+        "epoch": 35,
+        "hashedServerSeed": "abc53d2685de9078e0009b290a7a54711c0dd5c115ab39ffeeaa3df0e622bd3d",
+        "earlyChi2": 16.43,
+        "earlyBootstrapP": 0.10444777611194403,
+        "lateChi2": 5.486315789473685,
+        "latePValue": 0.939736356910566,
+        "cherryPickFlag": false
+      },
+      {
+        "epoch": 36,
+        "hashedServerSeed": "0c2c92bfd48cbcb327e166973c4d240616cef0a571344650164c4c60905c80ff",
+        "earlyChi2": 12.66,
+        "earlyBootstrapP": 0.25337331334332835,
+        "lateChi2": 8.661052631578945,
+        "latePValue": 0.7315758678648367,
+        "cherryPickFlag": false
+      },
+      {
+        "epoch": 37,
+        "hashedServerSeed": "e9a8a115a2b35279b31f5f6c27d7f6f253dce139649922c7cc9f308129450d05",
+        "earlyChi2": 5.51,
+        "earlyBootstrapP": 0.8650674662668666,
+        "lateChi2": 9.317894736842105,
+        "latePValue": 0.6755648555493825,
+        "cherryPickFlag": false
+      },
+      {
+        "epoch": 38,
+        "hashedServerSeed": "e55c0ab23f5afb02db8a092f7bb152b27b101b3817b85476c28e0f0870a3793b",
+        "earlyChi2": 5.9,
+        "earlyBootstrapP": 0.841079460269865,
+        "lateChi2": 7.210526315789475,
+        "latePValue": 0.8433931610282805,
+        "cherryPickFlag": false
+      },
+      {
+        "epoch": 39,
+        "hashedServerSeed": "b6b3f151360f476e395aebbbd3a7f20ec35a6dfed9ee0398ad4502e6cdd51d3e",
+        "earlyChi2": 19.419999999999998,
+        "earlyBootstrapP": 0.03798100949525238,
+        "lateChi2": 15.475789473684209,
+        "latePValue": 0.21644195393626298,
+        "cherryPickFlag": true
+      },
+      {
+        "epoch": 40,
+        "hashedServerSeed": "c4e2a077899144e5c2492a73d82acc2fcb53f7df48ef63d6efb3b1a3de16231f",
+        "earlyChi2": 11.750000000000002,
+        "earlyBootstrapP": 0.29685157421289354,
+        "lateChi2": 13.094736842105265,
+        "latePValue": 0.362192589700163,
+        "cherryPickFlag": false
+      },
+      {
+        "epoch": 41,
+        "hashedServerSeed": "5d84546255d10d0c1123f22c2794f67ebb11ace12e4eb5153dc4f9a73cd6c7ce",
+        "earlyChi2": 5.64,
+        "earlyBootstrapP": 0.8495752123938031,
+        "lateChi2": 7.757894736842106,
+        "latePValue": 0.8037523782355894,
+        "cherryPickFlag": false
+      },
+      {
+        "epoch": 42,
+        "hashedServerSeed": "7ac9dc39918e9317d061cf2422f336278970c8e3185afd5b333453f324fecc4b",
+        "earlyChi2": 19.419999999999998,
+        "earlyBootstrapP": 0.03798100949525238,
+        "lateChi2": 11.096842105263155,
+        "latePValue": 0.5206380567499208,
+        "cherryPickFlag": true
+      },
+      {
+        "epoch": 43,
+        "hashedServerSeed": "4fe5f8f98e9ba5a1071935bfaa571c906c9bea8264748f4be1c1290f622e3237",
+        "earlyChi2": 13.310000000000002,
+        "earlyBootstrapP": 0.2048975512243878,
+        "lateChi2": 8.168421052631578,
+        "latePValue": 0.771834198704938,
+        "cherryPickFlag": false
+      },
+      {
+        "epoch": 44,
+        "hashedServerSeed": "003ea8780bae8cb57f8a8ef3ab7366eebd1b5fdd1c534922e04159c07379c058",
+        "earlyChi2": 4.99,
+        "earlyBootstrapP": 0.894552723638181,
+        "lateChi2": 11.479999999999997,
+        "latePValue": 0.48829079846512047,
+        "cherryPickFlag": false
+      },
+      {
+        "epoch": 45,
+        "hashedServerSeed": "45fb83b6af146bbcd2db52ef465b08ada9cc9aa097b581ef7e2cb6438b261550",
+        "earlyChi2": 11.229999999999999,
+        "earlyBootstrapP": 0.3453273363318341,
+        "lateChi2": 12.54736842105263,
+        "latePValue": 0.40277906856339996,
+        "cherryPickFlag": false
+      },
+      {
+        "epoch": 46,
+        "hashedServerSeed": "7dad9134ed94c9b9ae34c77b855ec37959cfb134ee5583890ef3e828c5abfadd",
+        "earlyChi2": 9.149999999999999,
+        "earlyBootstrapP": 0.5367316341829086,
+        "lateChi2": 10.412631578947368,
+        "latePValue": 0.5798092346768005,
+        "cherryPickFlag": false
+      },
+      {
+        "epoch": 47,
+        "hashedServerSeed": "40f39ad6d65bbb52fc9126b95c29a51c63e2d04d9f33d619562df22b53753ae8",
+        "earlyChi2": 2.9100000000000006,
+        "earlyBootstrapP": 0.9790104947526237,
+        "lateChi2": 16.816842105263152,
+        "latePValue": 0.15661796175730203,
+        "cherryPickFlag": false
+      },
+      {
+        "epoch": 48,
+        "hashedServerSeed": "14a1eb1739855834997ffb18517e8ead2484fa8f74099f6b561ca7a14fbf6b4b",
+        "earlyChi2": 11.75,
+        "earlyBootstrapP": 0.30634682658670664,
+        "lateChi2": 15.202105263157897,
+        "latePValue": 0.2305695559351929,
+        "cherryPickFlag": false
+      },
+      {
+        "epoch": 49,
+        "hashedServerSeed": "afd860138e7a7975220a4c4653162f963302a58502f497309d86c567c1c58fd6",
+        "earlyChi2": 7.199999999999999,
+        "earlyBootstrapP": 0.7326336831584208,
+        "lateChi2": 10.412631578947368,
+        "latePValue": 0.5798092346768005,
+        "cherryPickFlag": false
+      },
+      {
+        "epoch": 50,
+        "hashedServerSeed": "814ffe65662f6b13d14b91a7dbdf2dccb2b766715677913a5e17907d021b58e6",
+        "earlyChi2": 9.67,
+        "earlyBootstrapP": 0.47876061969015493,
+        "lateChi2": 14.62736842105263,
+        "latePValue": 0.26244965392324204,
+        "cherryPickFlag": false
+      },
+      {
+        "epoch": 51,
+        "hashedServerSeed": "75b50e02e08ef3fe51973297de954a3ae43c527041bfdb579726b9ad27617b3f",
+        "earlyChi2": 12.790000000000001,
+        "earlyBootstrapP": 0.23938030984507747,
+        "lateChi2": 9.783157894736842,
+        "latePValue": 0.6349774781132871,
+        "cherryPickFlag": false
+      },
+      {
+        "epoch": 52,
+        "hashedServerSeed": "6968cad6bbbb54b8e3c001af086df974f0adc1857ee85aaa404e4e8e771aa46e",
+        "earlyChi2": 3.8200000000000003,
+        "earlyBootstrapP": 0.953023488255872,
+        "lateChi2": 22.618947368421054,
+        "latePValue": 0.031140761023918273,
+        "cherryPickFlag": false
+      },
+      {
+        "epoch": 53,
+        "hashedServerSeed": "f4a4131c7eb60abf462e7d14619a7ec5991c5398761dbac43c1399a4ad7382bc",
+        "earlyChi2": 11.230000000000002,
+        "earlyBootstrapP": 0.3313343328335832,
+        "lateChi2": 10.193684210526316,
+        "latePValue": 0.5989732851424192,
+        "cherryPickFlag": false
+      },
+      {
+        "epoch": 54,
+        "hashedServerSeed": "8b4ec8d540dbaa1b9fd43df395ade19ac39102b3ce72ac0a4aafa219b9cec969",
+        "earlyChi2": 6.03,
+        "earlyBootstrapP": 0.8325837081459271,
+        "lateChi2": 8.989473684210529,
+        "latePValue": 0.7038292597244313,
+        "cherryPickFlag": false
+      },
+      {
+        "epoch": 55,
+        "hashedServerSeed": "2fdb3ecebc762aa42039e4d91fa08966e228af78517c535d14d4f52f167cee1a",
+        "earlyChi2": 9.02,
+        "earlyBootstrapP": 0.5517241379310345,
+        "lateChi2": 12.793684210526317,
+        "latePValue": 0.384213319566832,
+        "cherryPickFlag": false
+      },
+      {
+        "epoch": 56,
+        "hashedServerSeed": "0e54f40e3207674ba4f9d3530cd54abe2c574e206b15c019bef0bc828423eb55",
+        "earlyChi2": 15.910000000000004,
+        "earlyBootstrapP": 0.111944027986007,
+        "lateChi2": 21.22315789473684,
+        "latePValue": 0.047206605533550605,
+        "cherryPickFlag": false
+      },
+      {
+        "epoch": 57,
+        "hashedServerSeed": "151e4391f3a1568c444c9c063b737f89d196a549a7737694394ea332984477ba",
+        "earlyChi2": 10.580000000000002,
+        "earlyBootstrapP": 0.38580709645177413,
+        "lateChi2": 10.11157894736842,
+        "latePValue": 0.606172432524396,
+        "cherryPickFlag": false
+      },
+      {
+        "epoch": 58,
+        "hashedServerSeed": "47fec3b2d030093341f5153103e9164e59fe08442495dcc093e92723158fba70",
+        "earlyChi2": 3.4299999999999997,
+        "earlyBootstrapP": 0.9735132433783108,
+        "lateChi2": 6.690526315789475,
+        "latePValue": 0.8773691593539961,
+        "cherryPickFlag": false
+      },
+      {
+        "epoch": 59,
+        "hashedServerSeed": "08db609f024a1f4ce68d2ecd76be507b1519b9673e02a46b9051702090b83352",
+        "earlyChi2": 2.39,
+        "earlyBootstrapP": 0.992503748125937,
+        "lateChi2": 20.922105263157892,
+        "latePValue": 0.0515327996045879,
+        "cherryPickFlag": false
+      },
+      {
+        "epoch": 60,
+        "hashedServerSeed": "0ba5a51eb66e4c3a236075de3c56b1712708e32f9b87fc78888865ca06763acc",
+        "earlyChi2": 7.07,
+        "earlyBootstrapP": 0.7481259370314842,
+        "lateChi2": 13.313684210526317,
+        "latePValue": 0.34665903979467183,
+        "cherryPickFlag": false
+      },
+      {
+        "epoch": 61,
+        "hashedServerSeed": "5c8f278e2f0831970d5da11a1f5369546ccf7d00c783126986c143f9b2b914b8",
+        "earlyChi2": 8.11,
+        "earlyBootstrapP": 0.6526736631684158,
+        "lateChi2": 10.056842105263158,
+        "latePValue": 0.6109738213733372,
+        "cherryPickFlag": false
+      },
+      {
+        "epoch": 62,
+        "hashedServerSeed": "acc917c9191fd93f2eb96714658904605908c77677f49a55c86334f2f7ed062f",
+        "earlyChi2": 19.03,
+        "earlyBootstrapP": 0.044977511244377814,
+        "lateChi2": 22.427368421052627,
+        "latePValue": 0.03300000403580716,
+        "cherryPickFlag": false
+      },
+      {
+        "epoch": 63,
+        "hashedServerSeed": "28ce46a4d9a072f3abbaf09df8fecb3814bae632bb97eb3df10c725fabbc03f1",
+        "earlyChi2": 10.19,
+        "earlyBootstrapP": 0.42978510744627685,
+        "lateChi2": 8.907368421052631,
+        "latePValue": 0.710821392930888,
+        "cherryPickFlag": false
+      },
+      {
+        "epoch": 64,
+        "hashedServerSeed": "94d111739be44186a87c3510d7b31930b0d38a91faf357797a039887ef1ee7a4",
+        "earlyChi2": 15.520000000000001,
+        "earlyBootstrapP": 0.12493753123438281,
+        "lateChi2": 12.32842105263158,
+        "latePValue": 0.41967719917877055,
+        "cherryPickFlag": false
+      },
+      {
+        "epoch": 65,
+        "hashedServerSeed": "99910c890ca8346a7290b133f22413b1c9869e9fea66939306e21843eb9e0174",
+        "earlyChi2": 8.24,
+        "earlyBootstrapP": 0.6216891554222889,
+        "lateChi2": 9.317894736842105,
+        "latePValue": 0.6755648555493825,
+        "cherryPickFlag": false
+      },
+      {
+        "epoch": 66,
+        "hashedServerSeed": "c07052ba6f25c914baa8e6c06ddc367e906cca7f97215c88b25ef2d41ebc7769",
+        "earlyChi2": 2.9099999999999997,
+        "earlyBootstrapP": 0.984007996001999,
+        "lateChi2": 28.147368421052626,
+        "latePValue": 0.005263851769081063,
+        "cherryPickFlag": false
+      },
+      {
+        "epoch": 67,
+        "hashedServerSeed": "e78dbec859c3d1e405193841a719bd873b272e273f5d9c47716eeaa15014ebd6",
+        "earlyChi2": 17.47,
+        "earlyBootstrapP": 0.07446276861569215,
+        "lateChi2": 10.795789473684211,
+        "latePValue": 0.5464959670681514,
+        "cherryPickFlag": false
+      },
+      {
+        "epoch": 68,
+        "hashedServerSeed": "daa6095da68822c16c33f87520e3ae7f4965c2161c60b745a57f6a3335425e15",
+        "earlyChi2": 9.28,
+        "earlyBootstrapP": 0.5122438780609695,
+        "lateChi2": 23.138947368421054,
+        "latePValue": 0.02656921824408298,
+        "cherryPickFlag": false
+      },
+      {
+        "epoch": 69,
+        "hashedServerSeed": "108d74eae235332bb011dcaed05df5505ca67c842f2a32016e6c9c4e55726be9",
+        "earlyChi2": 7.069999999999999,
+        "earlyBootstrapP": 0.7531234382808596,
+        "lateChi2": 6.115789473684212,
+        "latePValue": 0.9101329209058524,
+        "cherryPickFlag": false
+      },
+      {
+        "epoch": 70,
+        "hashedServerSeed": "03e7edc01e9d350f9468ac2d031b6b69fe7fa7a748eeb3e826eb05914d1a2647",
+        "earlyChi2": 15.520000000000001,
+        "earlyBootstrapP": 0.12493753123438281,
+        "lateChi2": 8.962105263157893,
+        "latePValue": 0.7061637017581192,
+        "cherryPickFlag": false
+      },
+      {
+        "epoch": 71,
+        "hashedServerSeed": "a4668c491432adadf5c5a239472ab19f2e45b1c328cfb2c1ba99d0e98baaa784",
+        "earlyChi2": 4.859999999999999,
+        "earlyBootstrapP": 0.9090454772613693,
+        "lateChi2": 9.153684210526317,
+        "latePValue": 0.6897507240017624,
+        "cherryPickFlag": false
+      },
+      {
+        "epoch": 72,
+        "hashedServerSeed": "b5da66c62ae579960d52021744fbb2a800974ce2b59f12270c554bdfb39f9b81",
+        "earlyChi2": 18.64,
+        "earlyBootstrapP": 0.05247376311844078,
+        "lateChi2": 3.1052631578947367,
+        "latePValue": 0.9947541255727843,
+        "cherryPickFlag": false
+      },
+      {
+        "epoch": 73,
+        "hashedServerSeed": "a5e5149e95df7453adad38ce4ee2457678c07f8fe7c47915cadd59549b355471",
+        "earlyChi2": 7.98,
+        "earlyBootstrapP": 0.6586706646676662,
+        "lateChi2": 10.303157894736843,
+        "latePValue": 0.5893835488258516,
+        "cherryPickFlag": false
+      },
+      {
+        "epoch": 74,
+        "hashedServerSeed": "0ceac80719616dc100bab73ba0ab45a4a33b00eb12271988cd848577e044b346",
+        "earlyChi2": 8.500000000000002,
+        "earlyBootstrapP": 0.5982008995502249,
+        "lateChi2": 7.48421052631579,
+        "latePValue": 0.824028697478812,
+        "cherryPickFlag": false
+      },
+      {
+        "epoch": 75,
+        "hashedServerSeed": "11412a75c7a577f66c9030dfc2c476be2b85d3fdaf3fb4c0921160e1ec12fefd",
+        "earlyChi2": 13.31,
+        "earlyBootstrapP": 0.21239380309845077,
+        "lateChi2": 5.07578947368421,
+        "latePValue": 0.9553994774007851,
+        "cherryPickFlag": false
+      },
+      {
+        "epoch": 76,
+        "hashedServerSeed": "d8835fc49bf278565fce1f9f4438d93c4b9f8b621cf6054fd95075cee196f3ec",
+        "earlyChi2": 6.03,
+        "earlyBootstrapP": 0.8325837081459271,
+        "lateChi2": 6.745263157894739,
+        "latePValue": 0.8739783028407989,
+        "cherryPickFlag": false
+      },
+      {
+        "epoch": 77,
+        "hashedServerSeed": "8b8e55e4f6828ce6e916980b5d8447c9da7aa9fa786d16b5bc4aefa27cd34337",
+        "earlyChi2": 8.24,
+        "earlyBootstrapP": 0.6216891554222889,
+        "lateChi2": 7.210526315789473,
+        "latePValue": 0.8433931610282808,
+        "cherryPickFlag": false
+      },
+      {
+        "epoch": 78,
+        "hashedServerSeed": "71fd83c5023106c38505f4bcc086be1e1d8e1ba012b1faf5123d53ebdbb23ab8",
+        "earlyChi2": 12.4,
+        "earlyBootstrapP": 0.25837081459270367,
+        "lateChi2": 9.56421052631579,
+        "latePValue": 0.6541322993154927,
+        "cherryPickFlag": false
+      },
+      {
+        "epoch": 79,
+        "hashedServerSeed": "c3926929e2cb52c5cfd88d8a77851484bb231b745a4f72307ab33493f49500f2",
+        "earlyChi2": 3.56,
+        "earlyBootstrapP": 0.9590204897551224,
+        "lateChi2": 15.338947368421051,
+        "latePValue": 0.22342165172450312,
+        "cherryPickFlag": false
+      },
+      {
+        "epoch": 80,
+        "hashedServerSeed": "fbfb2ff41c5284ccd5ec0b48cf9b5ac9d594ec555d79cd4990ae4312b8847bc0",
+        "earlyChi2": 13.830000000000002,
+        "earlyBootstrapP": 0.1854072963518241,
+        "lateChi2": 4.008421052631578,
+        "latePValue": 0.9832839558059524,
+        "cherryPickFlag": false
+      },
+      {
+        "epoch": 81,
+        "hashedServerSeed": "16a6723eb87d14459fd661f460ce1dcb92eeed3d07dad502e8736353345ed1e0",
+        "earlyChi2": 12.4,
+        "earlyBootstrapP": 0.25837081459270367,
+        "lateChi2": 12.465263157894736,
+        "latePValue": 0.40907329100825407,
+        "cherryPickFlag": false
+      },
+      {
+        "epoch": 82,
+        "hashedServerSeed": "d2a32747368505cb40c14e55afa75ab25e772ec023a185b47fc275c1a75f9ef0",
+        "earlyChi2": 6.550000000000001,
+        "earlyBootstrapP": 0.7871064467766117,
+        "lateChi2": 9.974736842105266,
+        "latePValue": 0.6181770729639016,
+        "cherryPickFlag": false
+      },
+      {
+        "epoch": 83,
+        "hashedServerSeed": "e6f1e8e9babdea45a12396778636dd7e89447559203616bbfc790b15f14842ae",
+        "earlyChi2": 8.5,
+        "earlyBootstrapP": 0.6081959020489756,
+        "lateChi2": 19.33473684210526,
+        "latePValue": 0.08076415515281299,
+        "cherryPickFlag": false
+      },
+      {
+        "epoch": 84,
+        "hashedServerSeed": "1613761e6adef02df6cb54717b2c1ad68c4b8f90866b3ebc072aa8b054b6571b",
+        "earlyChi2": 7.2,
+        "earlyBootstrapP": 0.7256371814092953,
+        "lateChi2": 20.402105263157896,
+        "latePValue": 0.059851665875050086,
+        "cherryPickFlag": false
+      },
+      {
+        "epoch": 85,
+        "hashedServerSeed": "4b7cbcd35a09d51da4c1cdf3cf1a7591219a060dd2490e8da270e9d2af807786",
+        "earlyChi2": 12.27,
+        "earlyBootstrapP": 0.2773613193403298,
+        "lateChi2": 13.778947368421054,
+        "latePValue": 0.31504655238633694,
+        "cherryPickFlag": false
+      },
+      {
+        "epoch": 86,
+        "hashedServerSeed": "925bfc2f070c649899e371214ad30d34b3f7fec661c6849b5f8d1ba8db714845",
+        "earlyChi2": 6.029999999999999,
+        "earlyBootstrapP": 0.8385807096451774,
+        "lateChi2": 12.355789473684212,
+        "latePValue": 0.4175452329311953,
+        "cherryPickFlag": false
+      },
+      {
+        "epoch": 87,
+        "hashedServerSeed": "aeee35a6edd03ac9596cd0314858a4685436ac076ae92d37b70e5abfd55ece93",
+        "earlyChi2": 10.579999999999998,
+        "earlyBootstrapP": 0.3938030984507746,
+        "lateChi2": 14.873684210526317,
+        "latePValue": 0.24841713103761642,
+        "cherryPickFlag": false
+      },
+      {
+        "epoch": 88,
+        "hashedServerSeed": "4e59ca0e67ff8b2564dfaf1526bd89566cef3fdbf895751df5dfbf25b25c2851",
+        "earlyChi2": 13.440000000000001,
+        "earlyBootstrapP": 0.20089955022488756,
+        "lateChi2": 3.9263157894736835,
+        "latePValue": 0.9847295656298214,
+        "cherryPickFlag": false
+      },
+      {
+        "epoch": 89,
+        "hashedServerSeed": "b570a312332bec105fa3b5e87030dc76afeb2bee8f00a16e737bb60f9fee1a51",
+        "earlyChi2": 5.51,
+        "earlyBootstrapP": 0.8650674662668666,
+        "lateChi2": 20.32,
+        "latePValue": 0.061269648580222213,
+        "cherryPickFlag": false
+      },
+      {
+        "epoch": 90,
+        "hashedServerSeed": "47de729a4069c101254c21e776cc8083542f1c90a1081a4e11b699df29c61957",
+        "earlyChi2": 11.23,
+        "earlyBootstrapP": 0.34182908545727136,
+        "lateChi2": 11.753684210526314,
+        "latePValue": 0.46565894689781906,
+        "cherryPickFlag": false
+      },
+      {
+        "epoch": 91,
+        "hashedServerSeed": "a82e71946bd4cec960821ab4f3f9e5fc5703b617085f19da8b513f075b5523b5",
+        "earlyChi2": 12.270000000000001,
+        "earlyBootstrapP": 0.2673663168415792,
+        "lateChi2": 10.823157894736841,
+        "latePValue": 0.5441318808139697,
+        "cherryPickFlag": false
+      },
+      {
+        "epoch": 92,
+        "hashedServerSeed": "0f18c016eb1e8c4aa6c344ee945ab278c74a7def8b45da70989bbd18dbf28dd3",
+        "earlyChi2": 7.070000000000001,
+        "earlyBootstrapP": 0.7376311844077961,
+        "lateChi2": 5.568421052631579,
+        "latePValue": 0.9362582010087755,
+        "cherryPickFlag": false
+      },
+      {
+        "epoch": 93,
+        "hashedServerSeed": "4b211dd6fc332f6ea33176e8b816bec7b373bd318dd6264a7e7140bb3c9583e6",
+        "earlyChi2": 7.070000000000001,
+        "earlyBootstrapP": 0.7376311844077961,
+        "lateChi2": 10.440000000000001,
+        "latePValue": 0.5774186916170454,
+        "cherryPickFlag": false
+      },
+      {
+        "epoch": 94,
+        "hashedServerSeed": "19524dd066187fa12c8ec4694069a6fd07f98be01de734428e83124690c54036",
+        "earlyChi2": 8.76,
+        "earlyBootstrapP": 0.5627186406796602,
+        "lateChi2": 8.031578947368422,
+        "latePValue": 0.7826577507045539,
+        "cherryPickFlag": false
+      },
+      {
+        "epoch": 95,
+        "hashedServerSeed": "f33e7dab9b1d31a0182e8b082261fe996438660a75aa851030e405f61dbae10b",
+        "earlyChi2": 9.67,
+        "earlyBootstrapP": 0.47876061969015493,
+        "lateChi2": 11.863157894736842,
+        "latePValue": 0.45673133896459417,
+        "cherryPickFlag": false
+      },
+      {
+        "epoch": 96,
+        "hashedServerSeed": "a9f9c99c9115159a510ff3edb145b920ce365d89dcc64a5ea0e12ed96f47b43e",
+        "earlyChi2": 10.190000000000001,
+        "earlyBootstrapP": 0.4207896051974013,
+        "lateChi2": 5.705263157894738,
+        "latePValue": 0.9302046445198079,
+        "cherryPickFlag": false
+      },
+      {
+        "epoch": 97,
+        "hashedServerSeed": "025852657543a252de0c1ec914f0057272cd75decbda5d0a2075c964a1f97ce7",
+        "earlyChi2": 4.47,
+        "earlyBootstrapP": 0.9300349825087456,
+        "lateChi2": 11.096842105263159,
+        "latePValue": 0.5206380567499198,
+        "cherryPickFlag": false
+      },
+      {
+        "epoch": 98,
+        "hashedServerSeed": "3017e91e7535178112ae55ab37bb853e0997271bfd174095ffeccdaf9eec01b0",
+        "earlyChi2": 12.270000000000001,
+        "earlyBootstrapP": 0.2673663168415792,
+        "lateChi2": 9.400000000000002,
+        "latePValue": 0.6684384852977379,
+        "cherryPickFlag": false
+      },
+      {
+        "epoch": 99,
+        "hashedServerSeed": "158fcba69cd157dfb65f4511b6c25b4203a4d9caf12705d16c2e8a4ed2de2365",
+        "earlyChi2": 11.360000000000001,
+        "earlyBootstrapP": 0.3218390804597701,
+        "lateChi2": 12.355789473684212,
+        "latePValue": 0.4175452329311953,
+        "cherryPickFlag": false
+      },
+      {
+        "epoch": 100,
+        "hashedServerSeed": "7a4f1d547c11c16c629b5cad42c8c81da5fc8871e90e20ced43fc8945dd9d4f3",
+        "earlyChi2": 10.320000000000002,
+        "earlyBootstrapP": 0.39480259870064965,
+        "lateChi2": 30.33684210526316,
+        "latePValue": 0.002484070241297598,
+        "cherryPickFlag": false
+      },
+      {
+        "epoch": 101,
+        "hashedServerSeed": "bff646a192dcdf34a772d213a39fe915d1c2d5ee1cc7d435db62629e3bb0ab33",
+        "earlyChi2": 13.83,
+        "earlyBootstrapP": 0.1904047976011994,
+        "lateChi2": 11.999999999999998,
+        "latePValue": 0.4456796413646098,
+        "cherryPickFlag": false
+      },
+      {
+        "epoch": 102,
+        "hashedServerSeed": "80ad991ea4bdc35c96c703c361dc32bec3b95eeadc3ca96be4a83a6c3934193b",
+        "earlyChi2": 17.86,
+        "earlyBootstrapP": 0.06746626686656672,
+        "lateChi2": 5.376842105263158,
+        "latePValue": 0.9441942352630204,
+        "cherryPickFlag": false
+      },
+      {
+        "epoch": 103,
+        "hashedServerSeed": "ca4f4cc1a52dd517f9cdb820214847b07dfe5499b5d95f73da2ec57c9d486027",
+        "earlyChi2": 14.22,
+        "earlyBootstrapP": 0.17391304347826086,
+        "lateChi2": 13.888421052631577,
+        "latePValue": 0.30789022927658316,
+        "cherryPickFlag": false
+      },
+      {
+        "epoch": 104,
+        "hashedServerSeed": "ff8a9714db9566fc0f64d754ab29e2356bed21c2ac0fbcaa2f37533ca4554b04",
+        "earlyChi2": 12.789999999999997,
+        "earlyBootstrapP": 0.24587706146926536,
+        "lateChi2": 11.069473684210525,
+        "latePValue": 0.5229743558807719,
+        "cherryPickFlag": false
+      },
+      {
+        "epoch": 105,
+        "hashedServerSeed": "ee9f5bc491be5cb4e9edbdd3e464c220b6b9a6a288686c9ff9f06a695bfbc81b",
+        "earlyChi2": 7.070000000000001,
+        "earlyBootstrapP": 0.7376311844077961,
+        "lateChi2": 14.326315789473686,
+        "latePValue": 0.28035753289852006,
+        "cherryPickFlag": false
+      },
+      {
+        "epoch": 106,
+        "hashedServerSeed": "6c4baf0ccc590ca7262d8c96bbb56f4f036eb46dcc88c70fc6bc496ec3c6ac86",
+        "earlyChi2": 16.3,
+        "earlyBootstrapP": 0.10794602698650675,
+        "lateChi2": 13.149473684210523,
+        "latePValue": 0.35827060094429297,
+        "cherryPickFlag": false
+      },
+      {
+        "epoch": 107,
+        "hashedServerSeed": "3ea4964c5bb6f44823863d8acc2269d904154f74a41e64d7e93db80d431bc2fc",
+        "earlyChi2": 7.720000000000001,
+        "earlyBootstrapP": 0.670664667666167,
+        "lateChi2": 14.052631578947368,
+        "latePValue": 0.29735995410537386,
+        "cherryPickFlag": false
+      },
+      {
+        "epoch": 108,
+        "hashedServerSeed": "d9766b0f29b86829dd2e4a0b7337132f64a1dcf6a6d2c083ea45e0406eb8bc5d",
+        "earlyChi2": 9.280000000000001,
+        "earlyBootstrapP": 0.5062468765617192,
+        "lateChi2": 12,
+        "latePValue": 0.44567964136461025,
+        "cherryPickFlag": false
+      },
+      {
+        "epoch": 109,
+        "hashedServerSeed": "6466deb82ee71c753eb1dd194bc2f07dfb3cd8f5552e5b6623c00e88352fbd00",
+        "earlyChi2": 13.96,
+        "earlyBootstrapP": 0.18040979510244878,
+        "lateChi2": 6.854736842105265,
+        "latePValue": 0.867061898163364,
+        "cherryPickFlag": false
+      },
+      {
+        "epoch": 110,
+        "hashedServerSeed": "fec23d2f73f9dff93265b7619eaa814319990fd821f1adfdd7f12c959e2c279e",
+        "earlyChi2": 4.47,
+        "earlyBootstrapP": 0.9300349825087456,
+        "lateChi2": 14.572631578947368,
+        "latePValue": 0.26564364098893467,
+        "cherryPickFlag": false
+      },
+      {
+        "epoch": 111,
+        "hashedServerSeed": "017ec017452b452a1f723c9d1cfb4c3de0e5ccfd2085e49f4461d1e2c0e1c649",
+        "earlyChi2": 8.63,
+        "earlyBootstrapP": 0.5822088955522239,
+        "lateChi2": 6.0610526315789475,
+        "latePValue": 0.9129731695528024,
+        "cherryPickFlag": false
+      },
+      {
+        "epoch": 112,
+        "hashedServerSeed": "74ecba904058fa1578cd64017f7ab52e2304f019e888b0ccf9c3c14fd76d33be",
+        "earlyChi2": 6.55,
+        "earlyBootstrapP": 0.8010994502748626,
+        "lateChi2": 10.27578947368421,
+        "latePValue": 0.5917797477439561,
+        "cherryPickFlag": false
+      },
+      {
+        "epoch": 113,
+        "hashedServerSeed": "6340a924bcf18f61e35df6f7d07293f21c726550f5eafacb425cefd12801b9ed",
+        "earlyChi2": 6.939999999999999,
+        "earlyBootstrapP": 0.7701149425287356,
+        "lateChi2": 16.214736842105264,
+        "latePValue": 0.181597514404508,
+        "cherryPickFlag": false
+      },
+      {
+        "epoch": 114,
+        "hashedServerSeed": "eafe058797e3a979e0f5067c12f607832c86e71a65872e01454add5b14c800ec",
+        "earlyChi2": 4.99,
+        "earlyBootstrapP": 0.894552723638181,
+        "lateChi2": 7.812631578947369,
+        "latePValue": 0.7995958262758104,
+        "cherryPickFlag": false
+      },
+      {
+        "epoch": 115,
+        "hashedServerSeed": "18f79035b80e0519b408ed24a934afe4e76a1caed860451c79c36b4c84a4ff1b",
+        "earlyChi2": 10.06,
+        "earlyBootstrapP": 0.44427786106946526,
+        "lateChi2": 8.031578947368422,
+        "latePValue": 0.7826577507045539,
+        "cherryPickFlag": false
+      },
+      {
+        "epoch": 116,
+        "hashedServerSeed": "9cd7aac7f79999cd3ef4132fea5782da523e5a9dd80ae79aa773c32b86e9132a",
+        "earlyChi2": 5.119999999999999,
+        "earlyBootstrapP": 0.8865567216391804,
+        "lateChi2": 12.49263157894737,
+        "latePValue": 0.40696946899381603,
+        "cherryPickFlag": false
+      },
+      {
+        "epoch": 117,
+        "hashedServerSeed": "991ae570263c3b0be8258d08b04c2b0d1dd93c4a0602203097ad883c38e83448",
+        "earlyChi2": 7.720000000000001,
+        "earlyBootstrapP": 0.670664667666167,
+        "lateChi2": 9.372631578947368,
+        "latePValue": 0.6708161521231278,
+        "cherryPickFlag": false
+      },
+      {
+        "epoch": 118,
+        "hashedServerSeed": "bbc0efb84b29b9acc9b5554c34a27f9a101283030dce5ad70c6a15ca98f5f983",
+        "earlyChi2": 11.750000000000002,
+        "earlyBootstrapP": 0.29685157421289354,
+        "lateChi2": 11.999999999999998,
+        "latePValue": 0.4456796413646098,
+        "cherryPickFlag": false
+      },
+      {
+        "epoch": 119,
+        "hashedServerSeed": "e445610de7d10bf4c1fc0ec64f868fd2c3789f2cd7dd64dea774df0b5590e6f3",
+        "earlyChi2": 5.51,
+        "earlyBootstrapP": 0.8650674662668666,
+        "lateChi2": 11.042105263157891,
+        "latePValue": 0.5253137458279609,
+        "cherryPickFlag": false
+      }
+    ]
+  }
+}

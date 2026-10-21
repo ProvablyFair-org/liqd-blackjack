@@ -1,0 +1,3 @@
+# capture-blackjack-v2.mjs writes its checkpoint and datasets here; a capture is promoted into
+# data/ deliberately, never committed from here.
+out/

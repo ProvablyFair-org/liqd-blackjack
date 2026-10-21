@@ -1,0 +1,35 @@
+{
+  "name": "blackjack-audit",
+  "version": "1.0.0",
+  "engines": {
+    "node": "22.x"
+  },
+  "license": "MIT",
+  "private": true,
+  "description": "Provably fair audit \u2014 LIQD.com Blackjack",
+  "scripts": {
+    "test": "node scripts/check-standalone.mjs && node test.js && node verify.js && node scripts/release-manifest.mjs --check",
+    "verify": "ts-node tests/verify.ts",
+    "simulate": "ts-node src/simulate.ts",
+    "rtp": "ts-node src/exact-play.ts",
+    "mutate": "ts-node tests/mutate.ts",
+    "attack": "ts-node src/cherry-pick-attack.ts",
+    "branches": "ts-node src/rng-branch-audit.ts",
+    "test:full": "mocha && npm run simulate && npm run verify",
+    "calibrate": "ts-node src/calibration.ts",
+    "test:toolchain": "npm run check:build && mocha && npm run verify",
+    "verify:standalone": "node verify.js",
+    "test:standalone": "node test.js && node verify.js && node scripts/release-manifest.mjs --check",
+    "build": "node scripts/build-standalone.mjs",
+    "check:build": "node scripts/build-standalone.mjs --check",
+    "check:standalone": "node scripts/check-standalone.mjs",
+    "rtp-claim:write": "ts-node src/rtp-settings.ts"
+  },
+  "devDependencies": {
+    "@types/mocha": "^10",
+    "@types/node": "^22",
+    "mocha": "^11",
+    "ts-node": "^10",
+    "typescript": "^5"
+  }
+}

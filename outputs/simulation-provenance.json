@@ -1,0 +1,83 @@
+{
+  "format": "liqd-blackjack-simulation-provenance-v1",
+  "codeVersion": {
+    "producer": "src/simulate.ts",
+    "passImplementations": "src/replay.ts",
+    "roundEngine": "src/round-engine.ts",
+    "shoe": "src/rng.ts (blackjackShoe)",
+    "referenceShuffle": "src/shuffle.ts (lazy Fisher-Yates) over src/prng.ts (xoshiro128**)",
+    "seedDerivation": "blackjack-seed-derivation-v1",
+    "seedDerivationRule": "seed(domain, i) = first 16 bytes of HMAC-SHA256(key = hex-decoded masterSeed, message = \"<seedDerivation>:<domain>:<i>\")",
+    "independentReplay": "replay/replay-bootstrap.py (Python standard library only; imports nothing from this repository)",
+    "inRepoReplay": "src/deep-replay.ts (npx ts-node src/deep-replay.ts)"
+  },
+  "dataset": {
+    "file": "data/blackjack-6000hands.json",
+    "sha256": "c2a28c5164a546105963ffb4ff8e7c422a68802df47afcdcfa0b4fdbad1fdbf7"
+  },
+  "simulation": {
+    "file": "outputs/simulation-results.json",
+    "sha256": "26ab1574ced2a1e59ca653a582951dac304ca62ea621e96b2b6de1e08a193567"
+  },
+  "masterSeed": "1565e5dec973a1df4a09967b69a12e0a21ab8d4cdfe8d8fc26ae08c1512501af",
+  "masterSeedScope": "ALL THREE passes of this run. Pass 0, Pass 1 and every Pass-2 bootstrap replicate derive from it.",
+  "masterSeedPin": "src/config.ts SIM_MASTER_SEED",
+  "recordingNote": "The master seed was generated once, as 32 random bytes, for the 2026-09-12 run and recorded before any experiment ran; since 2026-09-24 it is pinned in src/config.ts, so the committed experiment is regenerated rather than redrawn. This statement describes the procedure; repository metadata cannot independently authenticate when the seed was first generated.",
+  "pass0_reference": {
+    "experiment": "Finite 8-deck RTP of the rule set over a fair shuffle",
+    "rounds": 30000000,
+    "stream": "xoshiro128**",
+    "seedDomain": "pass0-reference-shuffle",
+    "seedIndex": 0,
+    "seedBytes": 16,
+    "drawRule": "uniform index in [0, n) by rejection: reject any 32-bit word >= floor(2^32 / n) * n, then take the remainder",
+    "checkpoints": 10,
+    "replayCommand": "npx ts-node src/deep-replay.ts",
+    "report": "outputs/deep-replay-report.json"
+  },
+  "pass1_real_shoe": {
+    "experiment": "First-card rank uniformity and serial independence of the real blackjackShoe algorithm",
+    "rounds": 1000000,
+    "serverSeed": "c3b8b8d6b50b6796b56cd6a7f4484f35",
+    "clientSeed": "df0a6fb592b2813da9d8c1cad1c98dfe",
+    "serverSeedDomain": "pass1-shoe-server",
+    "clientSeedDomain": "pass1-shoe-client",
+    "seedIndex": 0,
+    "derivedSeedBytes": 16,
+    "replayCommand": "npx ts-node src/deep-replay.ts",
+    "report": "outputs/deep-replay-report.json"
+  },
+  "pass2_bootstrap": {
+    "experiment": "Cherry-pick detection on the served window: the money statistic (primary, every nonce settled under the declared basic strategy, 50-round windows) and the first-card rank screen against a parametric bootstrap null (secondary)",
+    "seedsTested": 120,
+    "noncesPerSeed": 10000,
+    "earlyWindow": [
+      0,
+      49
+    ],
+    "lateWindow": [
+      50,
+      9999
+    ],
+    "bootstrapReps": 2000,
+    "serverDomain": "pass2-bootstrap-server",
+    "clientDomain": "pass2-bootstrap-client",
+    "replicateIndex": [
+      0,
+      1999
+    ],
+    "derivedSeedBytes": 16,
+    "statistic": "first-card rank chi-squared over the early window; at n=50 the expected count per rank is 50/13 = 3.85, so chiSquaredTest pools the two end bins and the statistic is an 11-bin chi-squared on df 10. The null uses the identical statistic.",
+    "pValueRule": "(count(null statistic >= observed statistic) + 1) / (bootstrapReps + 1)",
+    "nullStatistics": 2000,
+    "nullFile": "outputs/bootstrap-nulls.float64le",
+    "nullSHA256": "c69eeb27b6e0679658c5f2bf1f3d5c60481ee6de062ae16e1cc901bcbac87916",
+    "nullFormat": "IEEE-754 float64 little-endian, GENERATION order (index r = replicate r), one value per replicate",
+    "replayCommand": "python3 replay/replay-bootstrap.py",
+    "report": "outputs/bootstrap-replay-report.json"
+  },
+  "supersededArtifact": {
+    "file": "tests/fixtures/legacy-simulation-results.json",
+    "note": "The 2026-09-02 simulation this release replaces. Its random inputs were never recorded and cannot be recovered, so it is retained as a FROZEN TEST FIXTURE with its digest pinned in src/config.ts (LEGACY_SIMULATION_SHA256) — not as a reproducible result, and not as the artifact of record."
+  }
+}

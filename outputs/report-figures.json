@@ -1,0 +1,101 @@
+{
+  "audit": "LIQD Blackjack",
+  "what": "Figures cited in the report chapters, recomputed from the hash-pinned dataset and the exact engines. Not scored — see outputs/verification-results.json for the verdict.",
+  "datasetSha256": "c2a28c5164a546105963ffb4ff8e7c422a68802df47afcdcfa0b4fdbad1fdbf7",
+  "moneyPath": {
+    "mainWageredUsdc": 2992.6,
+    "sideWageredUsdc": 1160,
+    "insuranceWageredUsdc": 86.65,
+    "wageredExInsuranceUsdc": 4152.6,
+    "wageredInclInsuranceUsdc": 4239.25,
+    "returnedUsdc": 4155.35,
+    "returnedExInsuranceUsdc": 4089.05,
+    "realizedRtpInclInsurancePct": 98.02087633425724,
+    "realizedRtpExInsurancePct": 98.46963348263739
+  },
+  "insurance": {
+    "rounds": 446,
+    "atLowStake": 433,
+    "atHighStake": 13,
+    "wageredUsdc": 86.65,
+    "returnedUsdc": 66.3,
+    "settledAt3x": 145,
+    "settledAt0x": 301
+  },
+  "naturals": {
+    "total": 253,
+    "won": 243,
+    "pushed": 10,
+    "ofAllRoundsPct": 4.216666666666667
+  },
+  "perfectPairsLive": {
+    "bets": 5800,
+    "wins": 457,
+    "wageredUsdc": 580,
+    "returnedUsdc": 596,
+    "returnPct": 102.75862068965517,
+    "hitRatePct": 7.879310344827586,
+    "expectedHitRatePct": 7.46987951807229
+  },
+  "sideBetEdges": {
+    "perfectPairsRational": "9/415",
+    "perfectPairsEdgePct": 2.1686746987951806,
+    "perfectPairsRtpPct": 97.83132530120481,
+    "perfectPairsAt12to1EdgePct": 4.096385542168675,
+    "perfectPairsAt12to1RtpPct": 95.90361445783132,
+    "coloredPairPipGainPP": 1.9277108433734942,
+    "twentyOnePlusThreeRational": "4596/124085",
+    "twentyOnePlusThreeEdgePct": 3.70391264052867,
+    "pairEnumerationWeight": "86320",
+    "tripleEnumerationWeight": "11912160"
+  },
+  "workedExamples": [
+    {
+      "epoch": 2,
+      "nonce": 19,
+      "what": "insurance-only credit: the insurance return is the whole credit",
+      "credited": 0.15,
+      "components": [
+        {
+          "label": "insurance",
+          "amountUsdc": 0.15
+        }
+      ],
+      "componentsSumUsdc": 0.15,
+      "reconciles": true
+    },
+    {
+      "epoch": 2,
+      "nonce": 25,
+      "what": "split + double + both side bets: four components in one credit",
+      "credited": 4.6,
+      "components": [
+        {
+          "label": "hand 1 (doubled)",
+          "amountUsdc": 0.4
+        },
+        {
+          "label": "hand 2 (doubled)",
+          "amountUsdc": 0.4
+        },
+        {
+          "label": "perfectPair",
+          "amountUsdc": 0.7
+        },
+        {
+          "label": "twentyOnePlusThree",
+          "amountUsdc": 3.1
+        }
+      ],
+      "componentsSumUsdc": 4.6,
+      "reconciles": true
+    }
+  ],
+  "infiniteDeck": {
+    "edgeTdPct": 0.5711924708129952,
+    "edgeCdPct": 0.5703880122735879,
+    "tableCostPP": 0.0008044585394072212,
+    "finite8TdEdgePct": 0.4876748223247249,
+    "cardRemovalLiftTdVsTdPP": 0.08351764848827026
+  }
+}

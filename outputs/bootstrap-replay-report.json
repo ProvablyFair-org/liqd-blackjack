@@ -1,0 +1,995 @@
+{
+  "method": "EXECUTED: independent Python standard-library implementation; no repository-code imports",
+  "datasetSha256": "c2a28c5164a546105963ffb4ff8e7c422a68802df47afcdcfa0b4fdbad1fdbf7",
+  "simulationSha256": "26ab1574ced2a1e59ca653a582951dac304ca62ea621e96b2b6de1e08a193567",
+  "provenanceSha256": "5ad0e673045c4b26ae0dd63fff3b3fbfb96b5cf8778039254261238a89571b4c",
+  "nullSha256": "c69eeb27b6e0679658c5f2bf1f3d5c60481ee6de062ae16e1cc901bcbac87916",
+  "masterSeed": "1565e5dec973a1df4a09967b69a12e0a21ab8d4cdfe8d8fc26ae08c1512501af",
+  "seedDerivation": "blackjack-seed-derivation-v1",
+  "bootstrapStatisticsChecked": 2000,
+  "bootstrapStatisticMismatches": 0,
+  "earlyChiSquareRowsChecked": 120,
+  "earlyChiSquareMismatches": 0,
+  "lateChiSquareRowsChecked": 120,
+  "lateChiSquareMismatches": 0,
+  "bootstrapPValuesChecked": 120,
+  "bootstrapPValueMismatches": 0,
+  "latePMethod": "df=12 survival: exp(-chi2/2) * sum((chi2/2)^j/j!, j=0..5)",
+  "latePMaxAbsoluteDifference": 1.6653345369377348e-15,
+  "shoesDerived": 1300000,
+  "flagEpochs": [
+    5,
+    8,
+    32,
+    39,
+    42,
+    62,
+    72
+  ],
+  "cherryPickFlags": 7,
+  "expectedFlagsByChance": 5.7,
+  "binomialSurvival": 0.3444226688337333,
+  "results": [
+    {
+      "epoch": 0,
+      "earlyChi2": 6.03,
+      "earlyBootstrapP": 0.8045977011494253,
+      "lateChi2": 4.597788944723618,
+      "latePValue": 0.9700837175080541,
+      "flag": false
+    },
+    {
+      "epoch": 1,
+      "earlyChi2": 5.8999999999999995,
+      "earlyBootstrapP": 0.8310844577711144,
+      "lateChi2": 12.288040201005026,
+      "latePValue": 0.42283288199020336,
+      "flag": false
+    },
+    {
+      "epoch": 2,
+      "earlyChi2": 13.830000000000004,
+      "earlyBootstrapP": 0.16891554222888555,
+      "lateChi2": 19.210050251256284,
+      "latePValue": 0.0835838506826168,
+      "flag": false
+    },
+    {
+      "epoch": 3,
+      "earlyChi2": 11.1,
+      "earlyBootstrapP": 0.35782108945527236,
+      "lateChi2": 6.878994974874373,
+      "latePValue": 0.8655053325858166,
+      "flag": false
+    },
+    {
+      "epoch": 4,
+      "earlyChi2": 7.459999999999999,
+      "earlyBootstrapP": 0.6806596701649176,
+      "lateChi2": 12.094673366834172,
+      "latePValue": 0.4381065795463052,
+      "flag": false
+    },
+    {
+      "epoch": 5,
+      "earlyChi2": 20.59,
+      "earlyBootstrapP": 0.031484257871064465,
+      "lateChi2": 15.977688442211058,
+      "latePValue": 0.19226011113409117,
+      "flag": true
+    },
+    {
+      "epoch": 6,
+      "earlyChi2": 13.829999999999998,
+      "earlyBootstrapP": 0.18040979510244878,
+      "lateChi2": 9.374472361809048,
+      "latePValue": 0.6706562989179634,
+      "flag": false
+    },
+    {
+      "epoch": 7,
+      "earlyChi2": 10.06,
+      "earlyBootstrapP": 0.4362818590704648,
+      "lateChi2": 15.998592964824121,
+      "latePValue": 0.1913005153678902,
+      "flag": false
+    },
+    {
+      "epoch": 8,
+      "earlyChi2": 19.549999999999997,
+      "earlyBootstrapP": 0.0384807596201899,
+      "lateChi2": 5.9983919597989965,
+      "latePValue": 0.9161630965955277,
+      "flag": true
+    },
+    {
+      "epoch": 9,
+      "earlyChi2": 9.280000000000001,
+      "earlyBootstrapP": 0.49025487256371814,
+      "lateChi2": 18.120402010050253,
+      "latePValue": 0.11208330909152497,
+      "flag": false
+    },
+    {
+      "epoch": 10,
+      "earlyChi2": 10.71,
+      "earlyBootstrapP": 0.37381309345327335,
+      "lateChi2": 14.169447236180904,
+      "latePValue": 0.290018862812653,
+      "flag": false
+    },
+    {
+      "epoch": 11,
+      "earlyChi2": 6.03,
+      "earlyBootstrapP": 0.8045977011494253,
+      "lateChi2": 11.360402010050253,
+      "latePValue": 0.4983105589114901,
+      "flag": false
+    },
+    {
+      "epoch": 12,
+      "earlyChi2": 11.879999999999999,
+      "earlyBootstrapP": 0.2863568215892054,
+      "lateChi2": 5.964422110552763,
+      "latePValue": 0.9178648733569097,
+      "flag": false
+    },
+    {
+      "epoch": 13,
+      "earlyChi2": 12.14,
+      "earlyBootstrapP": 0.27636181909045476,
+      "lateChi2": 5.750150753768844,
+      "latePValue": 0.928149166538074,
+      "flag": false
+    },
+    {
+      "epoch": 14,
+      "earlyChi2": 11.88,
+      "earlyBootstrapP": 0.28335832083958024,
+      "lateChi2": 7.1585929648241216,
+      "latePValue": 0.8469574732543542,
+      "flag": false
+    },
+    {
+      "epoch": 15,
+      "earlyChi2": 4.340000000000001,
+      "earlyBootstrapP": 0.9405297351324338,
+      "lateChi2": 8.553969849246231,
+      "latePValue": 0.740480919801562,
+      "flag": false
+    },
+    {
+      "epoch": 16,
+      "earlyChi2": 12.399999999999997,
+      "earlyBootstrapP": 0.25737131434282856,
+      "lateChi2": 17.53246231155779,
+      "latePValue": 0.13064151660514842,
+      "flag": false
+    },
+    {
+      "epoch": 17,
+      "earlyChi2": 10.84,
+      "earlyBootstrapP": 0.36231884057971014,
+      "lateChi2": 7.370251256281407,
+      "latePValue": 0.8322078087718758,
+      "flag": false
+    },
+    {
+      "epoch": 18,
+      "earlyChi2": 14.739999999999998,
+      "earlyBootstrapP": 0.14292853573213393,
+      "lateChi2": 6.249246231155779,
+      "latePValue": 0.9029998241995747,
+      "flag": false
+    },
+    {
+      "epoch": 19,
+      "earlyChi2": 5.9,
+      "earlyBootstrapP": 0.8260869565217391,
+      "lateChi2": 15.836582914572864,
+      "latePValue": 0.1988360446142216,
+      "flag": false
+    },
+    {
+      "epoch": 20,
+      "earlyChi2": 7.720000000000001,
+      "earlyBootstrapP": 0.6416791604197901,
+      "lateChi2": 13.278391959798999,
+      "latePValue": 0.34913492845696736,
+      "flag": false
+    },
+    {
+      "epoch": 21,
+      "earlyChi2": 5.51,
+      "earlyBootstrapP": 0.8675662168915542,
+      "lateChi2": 3.424522613065327,
+      "latePValue": 0.9917323667553711,
+      "flag": false
+    },
+    {
+      "epoch": 22,
+      "earlyChi2": 6.679999999999998,
+      "earlyBootstrapP": 0.7401299350324838,
+      "lateChi2": 10.801206030150755,
+      "latePValue": 0.546027892817557,
+      "flag": false
+    },
+    {
+      "epoch": 23,
+      "earlyChi2": 11.23,
+      "earlyBootstrapP": 0.34182908545727136,
+      "lateChi2": 26.25748743718593,
+      "latePValue": 0.009868307689526507,
+      "flag": false
+    },
+    {
+      "epoch": 24,
+      "earlyChi2": 8.11,
+      "earlyBootstrapP": 0.6276861569215393,
+      "lateChi2": 6.607236180904523,
+      "latePValue": 0.8824412006734363,
+      "flag": false
+    },
+    {
+      "epoch": 25,
+      "earlyChi2": 11.23,
+      "earlyBootstrapP": 0.34182908545727136,
+      "lateChi2": 13.939497487437185,
+      "latePValue": 0.30458855031483406,
+      "flag": false
+    },
+    {
+      "epoch": 26,
+      "earlyChi2": 15.52,
+      "earlyBootstrapP": 0.11144427786106946,
+      "lateChi2": 11.159195979899497,
+      "latePValue": 0.5153271309496161,
+      "flag": false
+    },
+    {
+      "epoch": 27,
+      "earlyChi2": 14.739999999999998,
+      "earlyBootstrapP": 0.14292853573213393,
+      "lateChi2": 7.072361809045225,
+      "latePValue": 0.852794734877876,
+      "flag": false
+    },
+    {
+      "epoch": 28,
+      "earlyChi2": 8.629999999999999,
+      "earlyBootstrapP": 0.5702148925537232,
+      "lateChi2": 8.075778894472363,
+      "latePValue": 0.7791808225195704,
+      "flag": false
+    },
+    {
+      "epoch": 29,
+      "earlyChi2": 15.909999999999998,
+      "earlyBootstrapP": 0.10194902548725637,
+      "lateChi2": 20.79618090452261,
+      "latePValue": 0.05344591698800401,
+      "flag": false
+    },
+    {
+      "epoch": 30,
+      "earlyChi2": 10.71,
+      "earlyBootstrapP": 0.37381309345327335,
+      "lateChi2": 9.63316582914573,
+      "latePValue": 0.6481076387832584,
+      "flag": false
+    },
+    {
+      "epoch": 31,
+      "earlyChi2": 9.15,
+      "earlyBootstrapP": 0.511744127936032,
+      "lateChi2": 19.858090452261308,
+      "latePValue": 0.06981848508385646,
+      "flag": false
+    },
+    {
+      "epoch": 32,
+      "earlyChi2": 20.59,
+      "earlyBootstrapP": 0.031484257871064465,
+      "lateChi2": 9.26994974874372,
+      "latePValue": 0.6797165487033204,
+      "flag": true
+    },
+    {
+      "epoch": 33,
+      "earlyChi2": 14.870000000000001,
+      "earlyBootstrapP": 0.13243378310844578,
+      "lateChi2": 4.205829145728643,
+      "latePValue": 0.9794292045689782,
+      "flag": false
+    },
+    {
+      "epoch": 34,
+      "earlyChi2": 11.750000000000002,
+      "earlyBootstrapP": 0.29535232383808097,
+      "lateChi2": 10.090452261306533,
+      "latePValue": 0.6080254832333826,
+      "flag": false
+    },
+    {
+      "epoch": 35,
+      "earlyChi2": 16.43,
+      "earlyBootstrapP": 0.0864567716141929,
+      "lateChi2": 6.60462311557789,
+      "latePValue": 0.8825985987298646,
+      "flag": false
+    },
+    {
+      "epoch": 36,
+      "earlyChi2": 12.66,
+      "earlyBootstrapP": 0.24887556221889057,
+      "lateChi2": 19.54452261306533,
+      "latePValue": 0.07620767800131327,
+      "flag": false
+    },
+    {
+      "epoch": 37,
+      "earlyChi2": 5.51,
+      "earlyBootstrapP": 0.8675662168915542,
+      "lateChi2": 10.323015075376883,
+      "latePValue": 0.5876455837083145,
+      "flag": false
+    },
+    {
+      "epoch": 38,
+      "earlyChi2": 5.9,
+      "earlyBootstrapP": 0.8260869565217391,
+      "lateChi2": 6.296281407035176,
+      "latePValue": 0.9004161287418995,
+      "flag": false
+    },
+    {
+      "epoch": 39,
+      "earlyChi2": 19.419999999999998,
+      "earlyBootstrapP": 0.03948025987006497,
+      "lateChi2": 7.461708542713569,
+      "latePValue": 0.825656454711412,
+      "flag": true
+    },
+    {
+      "epoch": 40,
+      "earlyChi2": 11.750000000000002,
+      "earlyBootstrapP": 0.29535232383808097,
+      "lateChi2": 12.039798994974873,
+      "latePValue": 0.4424886453252663,
+      "flag": false
+    },
+    {
+      "epoch": 41,
+      "earlyChi2": 5.64,
+      "earlyBootstrapP": 0.8470764617691154,
+      "lateChi2": 7.955577889447236,
+      "latePValue": 0.7885921202221532,
+      "flag": false
+    },
+    {
+      "epoch": 42,
+      "earlyChi2": 19.419999999999998,
+      "earlyBootstrapP": 0.03948025987006497,
+      "lateChi2": 9.24643216080402,
+      "latePValue": 0.6817501744762949,
+      "flag": true
+    },
+    {
+      "epoch": 43,
+      "earlyChi2": 13.310000000000002,
+      "earlyBootstrapP": 0.19940029985007496,
+      "lateChi2": 16.71718592964824,
+      "latePValue": 0.1605490692804327,
+      "flag": false
+    },
+    {
+      "epoch": 44,
+      "earlyChi2": 4.99,
+      "earlyBootstrapP": 0.9035482258870565,
+      "lateChi2": 13.395979899497489,
+      "latePValue": 0.34092789232732973,
+      "flag": false
+    },
+    {
+      "epoch": 45,
+      "earlyChi2": 11.229999999999999,
+      "earlyBootstrapP": 0.3458270864567716,
+      "lateChi2": 10.633969849246231,
+      "latePValue": 0.5605202218612877,
+      "flag": false
+    },
+    {
+      "epoch": 46,
+      "earlyChi2": 9.149999999999999,
+      "earlyBootstrapP": 0.5142428785607196,
+      "lateChi2": 4.177085427135678,
+      "latePValue": 0.9800246562065232,
+      "flag": false
+    },
+    {
+      "epoch": 47,
+      "earlyChi2": 2.9100000000000006,
+      "earlyBootstrapP": 0.984007996001999,
+      "lateChi2": 9.22291457286432,
+      "latePValue": 0.6837818522941507,
+      "flag": false
+    },
+    {
+      "epoch": 48,
+      "earlyChi2": 11.75,
+      "earlyBootstrapP": 0.30334832583708143,
+      "lateChi2": 14.041407035175881,
+      "latePValue": 0.29807191620960766,
+      "flag": false
+    },
+    {
+      "epoch": 49,
+      "earlyChi2": 7.199999999999999,
+      "earlyBootstrapP": 0.6911544227886057,
+      "lateChi2": 15.954170854271359,
+      "latePValue": 0.19334415085001466,
+      "flag": false
+    },
+    {
+      "epoch": 50,
+      "earlyChi2": 9.67,
+      "earlyBootstrapP": 0.47176411794102946,
+      "lateChi2": 8.472964824120604,
+      "latePValue": 0.747164357166623,
+      "flag": false
+    },
+    {
+      "epoch": 51,
+      "earlyChi2": 12.790000000000001,
+      "earlyBootstrapP": 0.2368815592203898,
+      "lateChi2": 11.15396984924623,
+      "latePValue": 0.5157716125758941,
+      "flag": false
+    },
+    {
+      "epoch": 52,
+      "earlyChi2": 3.8200000000000003,
+      "earlyBootstrapP": 0.9635182408795602,
+      "lateChi2": 6.23356783919598,
+      "latePValue": 0.903853019281359,
+      "flag": false
+    },
+    {
+      "epoch": 53,
+      "earlyChi2": 11.230000000000002,
+      "earlyBootstrapP": 0.33183408295852074,
+      "lateChi2": 10.351758793969852,
+      "latePValue": 0.5851308045771639,
+      "flag": false
+    },
+    {
+      "epoch": 54,
+      "earlyChi2": 6.03,
+      "earlyBootstrapP": 0.8045977011494253,
+      "lateChi2": 12.01105527638191,
+      "latePValue": 0.4447921842412714,
+      "flag": false
+    },
+    {
+      "epoch": 55,
+      "earlyChi2": 9.02,
+      "earlyBootstrapP": 0.5292353823088456,
+      "lateChi2": 13.171256281407038,
+      "latePValue": 0.35671695863254743,
+      "flag": false
+    },
+    {
+      "epoch": 56,
+      "earlyChi2": 15.910000000000004,
+      "earlyBootstrapP": 0.095952023988006,
+      "lateChi2": 20.971256281407037,
+      "latePValue": 0.05080294572694406,
+      "flag": false
+    },
+    {
+      "epoch": 57,
+      "earlyChi2": 10.580000000000002,
+      "earlyBootstrapP": 0.384807596201899,
+      "lateChi2": 10.0956783919598,
+      "latePValue": 0.60756707421692,
+      "flag": false
+    },
+    {
+      "epoch": 58,
+      "earlyChi2": 3.4299999999999997,
+      "earlyBootstrapP": 0.9780109945027486,
+      "lateChi2": 23.140100502512563,
+      "latePValue": 0.02655980786946773,
+      "flag": false
+    },
+    {
+      "epoch": 59,
+      "earlyChi2": 2.39,
+      "earlyBootstrapP": 0.9950024987506247,
+      "lateChi2": 15.36100502512563,
+      "latePValue": 0.2222852502573456,
+      "flag": false
+    },
+    {
+      "epoch": 60,
+      "earlyChi2": 7.07,
+      "earlyBootstrapP": 0.704647676161919,
+      "lateChi2": 17.362613065326634,
+      "latePValue": 0.13645857820647175,
+      "flag": false
+    },
+    {
+      "epoch": 61,
+      "earlyChi2": 8.11,
+      "earlyBootstrapP": 0.6276861569215393,
+      "lateChi2": 7.082814070351759,
+      "latePValue": 0.8520926387095942,
+      "flag": false
+    },
+    {
+      "epoch": 62,
+      "earlyChi2": 19.03,
+      "earlyBootstrapP": 0.04047976011994003,
+      "lateChi2": 16.471557788944725,
+      "latePValue": 0.17057956045318903,
+      "flag": true
+    },
+    {
+      "epoch": 63,
+      "earlyChi2": 10.19,
+      "earlyBootstrapP": 0.4272863568215892,
+      "lateChi2": 16.47678391959799,
+      "latePValue": 0.17036102790308927,
+      "flag": false
+    },
+    {
+      "epoch": 64,
+      "earlyChi2": 15.520000000000001,
+      "earlyBootstrapP": 0.11094452773613193,
+      "lateChi2": 9.348341708542714,
+      "latePValue": 0.6729245456386239,
+      "flag": false
+    },
+    {
+      "epoch": 65,
+      "earlyChi2": 8.24,
+      "earlyBootstrapP": 0.5982008995502249,
+      "lateChi2": 12.214874371859295,
+      "latePValue": 0.4285808358499965,
+      "flag": false
+    },
+    {
+      "epoch": 66,
+      "earlyChi2": 2.9099999999999997,
+      "earlyBootstrapP": 0.9900049975012494,
+      "lateChi2": 12.753165829145729,
+      "latePValue": 0.38723405800705984,
+      "flag": false
+    },
+    {
+      "epoch": 67,
+      "earlyChi2": 17.47,
+      "earlyBootstrapP": 0.063968015992004,
+      "lateChi2": 13.317587939698491,
+      "latePValue": 0.34638584375030507,
+      "flag": false
+    },
+    {
+      "epoch": 68,
+      "earlyChi2": 9.28,
+      "earlyBootstrapP": 0.4927536231884058,
+      "lateChi2": 9.536482412060302,
+      "latePValue": 0.656552339683611,
+      "flag": false
+    },
+    {
+      "epoch": 69,
+      "earlyChi2": 7.069999999999999,
+      "earlyBootstrapP": 0.7141429285357321,
+      "lateChi2": 23.163618090452257,
+      "latePValue": 0.026368558825194878,
+      "flag": false
+    },
+    {
+      "epoch": 70,
+      "earlyChi2": 15.520000000000001,
+      "earlyBootstrapP": 0.11094452773613193,
+      "lateChi2": 4.961005025125628,
+      "latePValue": 0.9592687319027919,
+      "flag": false
+    },
+    {
+      "epoch": 71,
+      "earlyChi2": 4.859999999999999,
+      "earlyBootstrapP": 0.9180409795102449,
+      "lateChi2": 5.9696482412060305,
+      "latePValue": 0.9176043259261621,
+      "flag": false
+    },
+    {
+      "epoch": 72,
+      "earlyChi2": 18.64,
+      "earlyBootstrapP": 0.04697651174412794,
+      "lateChi2": 18.833768844221105,
+      "latePValue": 0.09261983737128873,
+      "flag": true
+    },
+    {
+      "epoch": 73,
+      "earlyChi2": 7.98,
+      "earlyBootstrapP": 0.6356821589205397,
+      "lateChi2": 10.51899497487437,
+      "latePValue": 0.5705267516377828,
+      "flag": false
+    },
+    {
+      "epoch": 74,
+      "earlyChi2": 8.500000000000002,
+      "earlyBootstrapP": 0.5782108945527237,
+      "lateChi2": 6.395577889447236,
+      "latePValue": 0.8948437524950795,
+      "flag": false
+    },
+    {
+      "epoch": 75,
+      "earlyChi2": 13.31,
+      "earlyBootstrapP": 0.2063968015992004,
+      "lateChi2": 5.679597989949749,
+      "latePValue": 0.9313644252189524,
+      "flag": false
+    },
+    {
+      "epoch": 76,
+      "earlyChi2": 6.03,
+      "earlyBootstrapP": 0.8045977011494253,
+      "lateChi2": 8.773467336683417,
+      "latePValue": 0.7221478773687895,
+      "flag": false
+    },
+    {
+      "epoch": 77,
+      "earlyChi2": 8.24,
+      "earlyBootstrapP": 0.5982008995502249,
+      "lateChi2": 5.778894472361809,
+      "latePValue": 0.9268148832220731,
+      "flag": false
+    },
+    {
+      "epoch": 78,
+      "earlyChi2": 12.4,
+      "earlyBootstrapP": 0.25737131434282856,
+      "lateChi2": 8.629748743718594,
+      "latePValue": 0.7341870472408542,
+      "flag": false
+    },
+    {
+      "epoch": 79,
+      "earlyChi2": 3.56,
+      "earlyBootstrapP": 0.9690154922538731,
+      "lateChi2": 5.953969849246231,
+      "latePValue": 0.9183845872941802,
+      "flag": false
+    },
+    {
+      "epoch": 80,
+      "earlyChi2": 13.830000000000002,
+      "earlyBootstrapP": 0.17391304347826086,
+      "lateChi2": 13.27316582914573,
+      "latePValue": 0.34950248176132387,
+      "flag": false
+    },
+    {
+      "epoch": 81,
+      "earlyChi2": 12.4,
+      "earlyBootstrapP": 0.25737131434282856,
+      "lateChi2": 17.47758793969849,
+      "latePValue": 0.1324978489857305,
+      "flag": false
+    },
+    {
+      "epoch": 82,
+      "earlyChi2": 6.550000000000001,
+      "earlyBootstrapP": 0.7471264367816092,
+      "lateChi2": 7.796180904522614,
+      "latePValue": 0.8008484373226674,
+      "flag": false
+    },
+    {
+      "epoch": 83,
+      "earlyChi2": 8.5,
+      "earlyBootstrapP": 0.5872063968015993,
+      "lateChi2": 10.119195979899498,
+      "latePValue": 0.6055043829767799,
+      "flag": false
+    },
+    {
+      "epoch": 84,
+      "earlyChi2": 7.2,
+      "earlyBootstrapP": 0.6891554222888556,
+      "lateChi2": 10.014673366834172,
+      "latePValue": 0.6146733085991511,
+      "flag": false
+    },
+    {
+      "epoch": 85,
+      "earlyChi2": 12.27,
+      "earlyBootstrapP": 0.2688655672163918,
+      "lateChi2": 12.55718592964824,
+      "latePValue": 0.4020299332327247,
+      "flag": false
+    },
+    {
+      "epoch": 86,
+      "earlyChi2": 6.029999999999999,
+      "earlyBootstrapP": 0.8160919540229885,
+      "lateChi2": 9.891859296482412,
+      "latePValue": 0.6254473076912096,
+      "flag": false
+    },
+    {
+      "epoch": 87,
+      "earlyChi2": 10.579999999999998,
+      "earlyBootstrapP": 0.3918040979510245,
+      "lateChi2": 9.531256281407035,
+      "latePValue": 0.6570082837537367,
+      "flag": false
+    },
+    {
+      "epoch": 88,
+      "earlyChi2": 13.440000000000001,
+      "earlyBootstrapP": 0.1924037981009495,
+      "lateChi2": 6.155175879396985,
+      "latePValue": 0.9080583670112415,
+      "flag": false
+    },
+    {
+      "epoch": 89,
+      "earlyChi2": 5.51,
+      "earlyBootstrapP": 0.8675662168915542,
+      "lateChi2": 13.359396984924624,
+      "latePValue": 0.3434682451755985,
+      "flag": false
+    },
+    {
+      "epoch": 90,
+      "earlyChi2": 11.23,
+      "earlyBootstrapP": 0.34182908545727136,
+      "lateChi2": 11.707939698492464,
+      "latePValue": 0.46941129849170316,
+      "flag": false
+    },
+    {
+      "epoch": 91,
+      "earlyChi2": 12.270000000000001,
+      "earlyBootstrapP": 0.2623688155922039,
+      "lateChi2": 12.105125628140705,
+      "latePValue": 0.4372742448295084,
+      "flag": false
+    },
+    {
+      "epoch": 92,
+      "earlyChi2": 7.070000000000001,
+      "earlyBootstrapP": 0.696151924037981,
+      "lateChi2": 5.927839195979901,
+      "latePValue": 0.9196758082832345,
+      "flag": false
+    },
+    {
+      "epoch": 93,
+      "earlyChi2": 7.070000000000001,
+      "earlyBootstrapP": 0.696151924037981,
+      "lateChi2": 9.28562814070352,
+      "latePValue": 0.678359747505523,
+      "flag": false
+    },
+    {
+      "epoch": 94,
+      "earlyChi2": 8.76,
+      "earlyBootstrapP": 0.5402298850574713,
+      "lateChi2": 13.827135678391961,
+      "latePValue": 0.3118830966746163,
+      "flag": false
+    },
+    {
+      "epoch": 95,
+      "earlyChi2": 9.67,
+      "earlyBootstrapP": 0.47176411794102946,
+      "lateChi2": 13.72,
+      "latePValue": 0.3189448303530355,
+      "flag": false
+    },
+    {
+      "epoch": 96,
+      "earlyChi2": 10.190000000000001,
+      "earlyBootstrapP": 0.41579210394802596,
+      "lateChi2": 6.249246231155778,
+      "latePValue": 0.9029998241995748,
+      "flag": false
+    },
+    {
+      "epoch": 97,
+      "earlyChi2": 4.47,
+      "earlyBootstrapP": 0.9390304847576212,
+      "lateChi2": 15.862713567839197,
+      "latePValue": 0.19760526589867008,
+      "flag": false
+    },
+    {
+      "epoch": 98,
+      "earlyChi2": 12.270000000000001,
+      "earlyBootstrapP": 0.2623688155922039,
+      "lateChi2": 5.674371859296483,
+      "latePValue": 0.9315992079387173,
+      "flag": false
+    },
+    {
+      "epoch": 99,
+      "earlyChi2": 11.360000000000001,
+      "earlyBootstrapP": 0.3188405797101449,
+      "lateChi2": 16.05346733668342,
+      "latePValue": 0.18879941710913156,
+      "flag": false
+    },
+    {
+      "epoch": 100,
+      "earlyChi2": 10.320000000000002,
+      "earlyBootstrapP": 0.3938030984507746,
+      "lateChi2": 12.59638190954774,
+      "latePValue": 0.3990465174142625,
+      "flag": false
+    },
+    {
+      "epoch": 101,
+      "earlyChi2": 13.83,
+      "earlyBootstrapP": 0.17791104447776113,
+      "lateChi2": 14.869748743718592,
+      "latePValue": 0.2486369617259666,
+      "flag": false
+    },
+    {
+      "epoch": 102,
+      "earlyChi2": 17.86,
+      "earlyBootstrapP": 0.05697151424287856,
+      "lateChi2": 5.76321608040201,
+      "latePValue": 0.9275444207995922,
+      "flag": false
+    },
+    {
+      "epoch": 103,
+      "earlyChi2": 14.22,
+      "earlyBootstrapP": 0.15692153923038482,
+      "lateChi2": 15.794773869346734,
+      "latePValue": 0.20081765224439097,
+      "flag": false
+    },
+    {
+      "epoch": 104,
+      "earlyChi2": 12.789999999999997,
+      "earlyBootstrapP": 0.24037981009495252,
+      "lateChi2": 5.447035175879397,
+      "latePValue": 0.9413595124646891,
+      "flag": false
+    },
+    {
+      "epoch": 105,
+      "earlyChi2": 7.070000000000001,
+      "earlyBootstrapP": 0.696151924037981,
+      "lateChi2": 12.59638190954774,
+      "latePValue": 0.3990465174142625,
+      "flag": false
+    },
+    {
+      "epoch": 106,
+      "earlyChi2": 16.3,
+      "earlyBootstrapP": 0.09045477261369315,
+      "lateChi2": 17.796381909547744,
+      "latePValue": 0.12201438969628838,
+      "flag": false
+    },
+    {
+      "epoch": 107,
+      "earlyChi2": 7.720000000000001,
+      "earlyBootstrapP": 0.6416791604197901,
+      "lateChi2": 5.718793969849246,
+      "latePValue": 0.9295886693481819,
+      "flag": false
+    },
+    {
+      "epoch": 108,
+      "earlyChi2": 9.280000000000001,
+      "earlyBootstrapP": 0.49025487256371814,
+      "lateChi2": 7.11678391959799,
+      "latePValue": 0.8498004007332961,
+      "flag": false
+    },
+    {
+      "epoch": 109,
+      "earlyChi2": 13.96,
+      "earlyBootstrapP": 0.16541729135432284,
+      "lateChi2": 9.228140703517589,
+      "latePValue": 0.683330539949263,
+      "flag": false
+    },
+    {
+      "epoch": 110,
+      "earlyChi2": 4.47,
+      "earlyBootstrapP": 0.9390304847576212,
+      "lateChi2": 13.970854271356785,
+      "latePValue": 0.3025733471977473,
+      "flag": false
+    },
+    {
+      "epoch": 111,
+      "earlyChi2": 8.63,
+      "earlyBootstrapP": 0.5632183908045977,
+      "lateChi2": 14.02572864321608,
+      "latePValue": 0.29906830820854186,
+      "flag": false
+    },
+    {
+      "epoch": 112,
+      "earlyChi2": 6.55,
+      "earlyBootstrapP": 0.7611194402798601,
+      "lateChi2": 7.7386934673366845,
+      "latePValue": 0.8052027458929014,
+      "flag": false
+    },
+    {
+      "epoch": 113,
+      "earlyChi2": 6.939999999999999,
+      "earlyBootstrapP": 0.7306346826586707,
+      "lateChi2": 22.87095477386935,
+      "latePValue": 0.02884168759810048,
+      "flag": false
+    },
+    {
+      "epoch": 114,
+      "earlyChi2": 4.99,
+      "earlyBootstrapP": 0.9035482258870565,
+      "lateChi2": 11.386532663316585,
+      "latePValue": 0.49611504604801704,
+      "flag": false
+    },
+    {
+      "epoch": 115,
+      "earlyChi2": 10.06,
+      "earlyBootstrapP": 0.4362818590704648,
+      "lateChi2": 8.911959798994975,
+      "latePValue": 0.7104312897605265,
+      "flag": false
+    },
+    {
+      "epoch": 116,
+      "earlyChi2": 5.119999999999999,
+      "earlyBootstrapP": 0.8935532233883059,
+      "lateChi2": 11.080804020100503,
+      "latePValue": 0.5220067655279662,
+      "flag": false
+    },
+    {
+      "epoch": 117,
+      "earlyChi2": 7.720000000000001,
+      "earlyBootstrapP": 0.6416791604197901,
+      "lateChi2": 20.142914572864324,
+      "latePValue": 0.06443033677787648,
+      "flag": false
+    },
+    {
+      "epoch": 118,
+      "earlyChi2": 11.750000000000002,
+      "earlyBootstrapP": 0.29535232383808097,
+      "lateChi2": 12.672160804020102,
+      "latePValue": 0.39331276739273807,
+      "flag": false
+    },
+    {
+      "epoch": 119,
+      "earlyChi2": 5.51,
+      "earlyBootstrapP": 0.8675662168915542,
+      "lateChi2": 8.836180904522614,
+      "latePValue": 0.7168554343872925,
+      "flag": false
+    }
+  ],
+  "verdict": "PASS"
+}

@@ -1,0 +1,9 @@
+[
+  {
+    "file": "capture/capture-blackjack-v2.selftest.mjs",
+    "line": 86,
+    "category": "cookie / session header",
+    "sha256": "f07155a2e03dbbde8b584d3037db401df22e595c12d28c19b8f40c1ebf9e4d5d",
+    "reason": "offline self-test cookie fixture: both cookie values are hand-typed filler (an ascending alphabet run followed by ascending digits, and a single repeated letter), used to assert scrub() removes Cookie keys and serialiseSafe() refuses cookie material. No network; never sent to LIQD."
+  }
+]

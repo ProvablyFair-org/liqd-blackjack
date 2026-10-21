@@ -1,0 +1,19 @@
+{
+  "decks": 8,
+  "s17": true,
+  "das": true,
+  "doubleAnyTwo": true,
+  "peek": true,
+  "blackjackPays": [
+    3,
+    2
+  ],
+  "insurancePays": [
+    2,
+    1
+  ],
+  "splitAcesOneCard": true,
+  "maxHandsAfterSplit": 2,
+  "splitTwentyOneIsNatural": false,
+  "surrender": false
+}

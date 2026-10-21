@@ -1,0 +1,29 @@
+{
+  "method": "EXECUTED: every pass re-dealt from the committed master seed and the revealed seeds through the same pure pass functions the simulator uses (src/replay.ts). Exact equality on every field except the two libm-derived Pass-1 p-values (firstCardPValue, serialRunsPValue), which are held to the reproduction bound 1e-14 abs + 1e-12 rel (since 2026-09-28).",
+  "scope": "Pass 0 (fair-shuffle reference RTP), Pass 1 (all census rows of the real-shoe stream and every statistic derived from them) and Pass 2 (every revealed seed over every nonce: served and late rank counts, every money window). The Pass-2 bootstrap null and the rank statistics are also replayed INDEPENDENTLY, in Python, by replay/replay-bootstrap.py.",
+  "simulationSha256": "26ab1574ced2a1e59ca653a582951dac304ca62ea621e96b2b6de1e08a193567",
+  "provenanceSha256": "5ad0e673045c4b26ae0dd63fff3b3fbfb96b5cf8778039254261238a89571b4c",
+  "masterSeed": "1565e5dec973a1df4a09967b69a12e0a21ab8d4cdfe8d8fc26ae08c1512501af",
+  "seedDerivation": "blackjack-seed-derivation-v1",
+  "pass0": {
+    "rounds": 30000000,
+    "checkpointsChecked": 10
+  },
+  "pass1": {
+    "rounds": 1000000,
+    "serverSeed": "c3b8b8d6b50b6796b56cd6a7f4484f35",
+    "clientSeed": "df0a6fb592b2813da9d8c1cad1c98dfe",
+    "rowsReplayed": 100,
+    "rowMismatches": 0
+  },
+  "pass2": {
+    "seeds": 120,
+    "noncesPerSeed": 10000,
+    "windowsPerSeed": 200,
+    "seedMismatches": 0
+  },
+  "comparisons": 282,
+  "mismatches": 0,
+  "mismatchDetail": [],
+  "verdict": "PASS"
+}

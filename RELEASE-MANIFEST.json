@@ -1,0 +1,48 @@
+{
+  "auditId": "PF-2026-LQ01",
+  "auditIdStatus": "confirmed by ProvablyFair.org",
+  "game": "blackjack",
+  "casino": "liqd",
+  "release": "v1.0.0",
+  "framework": "1.1",
+  "datasetSha256": "c2a28c5164a546105963ffb4ff8e7c422a68802df47afcdcfa0b4fdbad1fdbf7",
+  "artifacts": {
+    "data/blackjack-6000hands.json": "c2a28c5164a546105963ffb4ff8e7c422a68802df47afcdcfa0b4fdbad1fdbf7",
+    "outputs/bootstrap-nulls.float64le": "c69eeb27b6e0679658c5f2bf1f3d5c60481ee6de062ae16e1cc901bcbac87916",
+    "outputs/bootstrap-replay-report.json": "c4cf022c5d34bdfba86829f87551591baba694e1bf8351b99f138738deae4e05",
+    "outputs/cherry-pick-attack.json": "44d45d84a8cd7d54dee3fca146be7e146f4e1fa65385cd34d33fa611ee9d1e78",
+    "outputs/deep-replay-report.json": "44f2c8377f14df3e996ee2f753b7ec38faae97edd20497772cdd04c992b2ccbe",
+    "outputs/exact-rtp.json": "f89b1920086bf0af17dbf5f30350bfef259a6fa0f934631a7ffa41e34cec4611",
+    "outputs/report-figures.json": "5678c639334936125c7e363aea88c541787d7c219fa591894ddec10766d63115",
+    "outputs/rng-branch-coverage.json": "eb2c74a1ecf84d3dbf3c1cc3a490b9c04ad1a24d201c4f58efc4403bbacb4593",
+    "outputs/rtp-convergence.html": "45ce9d7ad631d600adfb526b68646c5c90434806f449aada193640bf90d8d4bb",
+    "outputs/simulation-provenance.json": "5ad0e673045c4b26ae0dd63fff3b3fbfb96b5cf8778039254261238a89571b4c",
+    "outputs/simulation-results.json": "26ab1574ced2a1e59ca653a582951dac304ca62ea621e96b2b6de1e08a193567",
+    "outputs/verification-results.json": "f57cfb406b3537411ecf280854057f6d9e2d396c5e4d6a2ca1ab44fe5f860ea9",
+    "outputs/rtp-claim-table.json": "9e447e3bfb9514d6f01adf90af4e366c17bb1b5431ad632ea7bd753ad990cb27"
+  },
+  "verdict": "PROVABLY FAIR — Full Pass",
+  "scored": {
+    "passed": 31,
+    "flags": 0,
+    "hardFail": 0,
+    "of": 31
+  },
+  "capturedAt": {
+    "from": "2026-08-05T18:31:22.042Z",
+    "to": "2026-08-05T20:18:54.442Z"
+  },
+  "environment": {
+    "host": "qa.liqd.com",
+    "stage": "pre-production",
+    "qualifier": "provisional"
+  },
+  "reproduction": {
+    "workflow": ".github/workflows/reproduce.yml",
+    "runner": "ubuntu-latest",
+    "node": "22",
+    "command": "npm ci && npm test"
+  },
+  "supersedes": null,
+  "signature": "SHA256:gEujiJm2pRyq7lQsfYQfQ1r97H/J7GdaKHbOW8GtikY"
+}
