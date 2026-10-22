@@ -1,6 +1,6 @@
 # LIQD Blackjack — Provably Fair Audit
 
-**Auditor:** [ProvablyFair.org](https://www.provablyfair.org) · **Audit ID:** `PF-2026-LQ01` · **Release:** `v1.0.0` (the first public release) · **Capture:** 5 August 2026, `qa.liqd.com`
+**Auditor:** [ProvablyFair.org](https://www.provablyfair.org) · **Audit ID:** `PF-2026-LQ01` · **Release:** `v1.0.1` (errata to `v1.0.0`, the first public release) · **Capture:** 5 August 2026, `qa.liqd.com`
 
 **Result: PROVABLY FAIR — Full Pass** *(provisional — pre-launch capture)*. 31/31 scored steps pass, with 0 flags and 0 hard fails. All 6,000 captured hands recompute card-for-card from their `(serverSeed, clientSeed, nonce)` inputs, all 120 seed epochs were revealed and hash to their commitments, and every payout matches the result reconstructed from the cards. "Pre-launch" means the dataset was captured on LIQD's pre-production host `qa.liqd.com`, not the public `liqd.com`; that production serves the same build is not established (DL-7).
 

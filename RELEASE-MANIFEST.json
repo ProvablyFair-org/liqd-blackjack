@@ -3,7 +3,7 @@
   "auditIdStatus": "confirmed by ProvablyFair.org",
   "game": "blackjack",
   "casino": "liqd",
-  "release": "v1.0.0",
+  "release": "v1.0.1",
   "framework": "1.1",
   "datasetSha256": "c2a28c5164a546105963ffb4ff8e7c422a68802df47afcdcfa0b4fdbad1fdbf7",
   "artifacts": {
@@ -43,6 +43,6 @@
     "node": "22",
     "command": "npm ci && npm test"
   },
-  "supersedes": null,
+  "supersedes": "v1.0.0",
   "signature": "SHA256:gEujiJm2pRyq7lQsfYQfQ1r97H/J7GdaKHbOW8GtikY"
 }
